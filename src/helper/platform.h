@@ -20,6 +20,7 @@ bool coreBinaryTrusted(const QString &path, QString *error);
 void cleanupStaleNetwork();
 
 QStringList conflictingAdapters();
+QStringList stopOtherVpns();
 bool ipForwarding();
 bool hotspotActive();
 bool tunPresent();

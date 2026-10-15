@@ -243,14 +243,21 @@ ApplicationWindow {
                 color: Theme.muted
                 text: qsTr("Обнаружено:\n%1\n\nЭто может помешать подключению или пустить часть трафика мимо туннеля.").arg(conflictDialog.details)
             }
+            PillButton {
+                Layout.fillWidth: true
+                visible: (App.diagnostics.conflictingAdapters || []).length > 0
+                accent: true
+                text: qsTr("Выключить другие VPN и подключить")
+                onClicked: { conflictDialog.close(); App.stopOtherVpns() }
+            }
             RowLayout {
                 Layout.fillWidth: true
                 spacing: Theme.grid
                 PillButton { Layout.fillWidth: true; text: qsTr("Отмена"); onClicked: conflictDialog.close() }
                 PillButton {
                     Layout.fillWidth: true
-                    accent: true
-                    text: qsTr("Подключить")
+                    accent: (App.diagnostics.conflictingAdapters || []).length === 0
+                    text: qsTr("Всё равно подключить")
                     onClicked: { conflictDialog.close(); App.acknowledgeConflicts() }
                 }
             }

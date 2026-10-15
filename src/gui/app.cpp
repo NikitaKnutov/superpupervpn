@@ -345,6 +345,19 @@ void App::acknowledgeConflicts()
     doConnect();
 }
 
+void App::stopOtherVpns()
+{
+    m_helper->call(u"stopOtherVpns"_s, {}, [this](const QJsonObject &r, const QJsonObject &e) {
+        const QStringList stopped = r.value(u"stopped"_s).toVariant().toStringList();
+        if (!e.isEmpty() || stopped.isEmpty()) {
+            emit toast(e.isEmpty() ? tr("Не удалось выключить другие VPN") : e.value(u"message"_s).toString());
+            return;
+        }
+        emit toast(tr("Выключено: %1").arg(stopped.join(u", "_s)));
+        connectNow();
+    });
+}
+
 void App::doConnect()
 {
     const Profile *p = find(m_storage->settings.value(u"selectedProfileId"_s).toString());

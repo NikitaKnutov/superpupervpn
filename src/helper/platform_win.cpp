@@ -16,6 +16,7 @@
 #include <iphlpapi.h>
 #include <netioapi.h>
 #include <sddl.h>
+#include <tlhelp32.h>
 
 #include <memory>
 
@@ -181,6 +182,41 @@ QStringList conflictingAdapters()
             }
     });
     return out;
+}
+
+QStringList stopOtherVpns()
+{
+    static const QStringList names = {
+        u"v2rayn.exe"_s, u"xray.exe"_s, u"v2ray.exe"_s, u"sing-box.exe"_s, u"mihomo.exe"_s, u"clash.exe"_s,
+        u"clash-meta.exe"_s, u"clash-verge.exe"_s, u"verge-mihomo.exe"_s, u"verge-mihomo-alpha.exe"_s,
+        u"flclash.exe"_s, u"flclashcore.exe"_s, u"hiddify.exe"_s, u"hiddifycli.exe"_s, u"nekoray.exe"_s,
+        u"nekobox_core.exe"_s, u"throne.exe"_s, u"happ.exe"_s, u"v2raytun.exe"_s, u"amneziavpn.exe"_s,
+        u"amneziavpn-service.exe"_s, u"wireguard.exe"_s, u"openvpn.exe"_s, u"openvpn-gui.exe"_s,
+        u"outline.exe"_s, u"tun2socks.exe"_s};
+    const QString ownCore = QFileInfo(coreBinary()).absoluteFilePath();
+    QStringList stopped;
+    const HANDLE snap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+    if (snap == INVALID_HANDLE_VALUE)
+        return stopped;
+    PROCESSENTRY32W e{};
+    e.dwSize = sizeof(e);
+    for (BOOL ok = Process32FirstW(snap, &e); ok; ok = Process32NextW(snap, &e)) {
+        const QString exe = QString::fromWCharArray(e.szExeFile);
+        if (e.th32ProcessID == GetCurrentProcessId() || !names.contains(exe, Qt::CaseInsensitive))
+            continue;
+        const HANDLE h = OpenProcess(PROCESS_TERMINATE | PROCESS_QUERY_LIMITED_INFORMATION, FALSE, e.th32ProcessID);
+        if (!h)
+            continue;
+        wchar_t path[MAX_PATH];
+        DWORD n = MAX_PATH;
+        const bool own = QueryFullProcessImageNameW(h, 0, path, &n)
+            && QFileInfo(QString::fromWCharArray(path, int(n))).absoluteFilePath().compare(ownCore, Qt::CaseInsensitive) == 0;
+        if (!own && TerminateProcess(h, 1))
+            stopped << exe;
+        CloseHandle(h);
+    }
+    CloseHandle(snap);
+    return stopped;
 }
 
 bool ipForwarding()

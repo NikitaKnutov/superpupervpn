@@ -3,6 +3,7 @@
 #include "protocol.h"
 
 #include <QDir>
+#include <QElapsedTimer>
 #include <QFile>
 #include <QFileInfo>
 #include <QJsonArray>
@@ -15,8 +16,11 @@
 #include <QRegularExpression>
 
 #include <climits>
+#include <csignal>
+#include <poll.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
+#include <sys/syscall.h>
 #include <unistd.h>
 
 using namespace Qt::StringLiterals;
@@ -138,6 +142,65 @@ QStringList conflictingAdapters()
                 || (i.flags().testFlag(QNetworkInterface::IsPointToPoint) && i.type() != QNetworkInterface::Ppp)))
             out << i.name();
     return out;
+}
+
+QStringList stopOtherVpns()
+{
+    const QStringList ifaces = conflictingAdapters();
+    QStringList stopped, owned;
+    QList<pollfd> procs;
+    const auto list = QDir::AllEntries | QDir::System | QDir::NoDotAndDotDot;
+    for (const QString &entry : QDir(u"/proc"_s).entryList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Unsorted)) {
+        bool ok = false;
+        const pid_t pid = entry.toInt(&ok);
+        if (!ok || pid <= 1 || pid == ::getpid())
+            continue;
+        const QString base = u"/proc/"_s + entry;
+        for (const QString &fd : QDir(base + u"/fd"_s).entryList(list, QDir::Unsorted)) {
+            if (QFile::symLinkTarget(base + u"/fd/"_s + fd) != u"/dev/net/tun")
+                continue;
+            QFile info(base + u"/fdinfo/"_s + fd);
+            if (!info.open(QIODevice::ReadOnly))
+                continue;
+            const QString iff = QString::fromUtf8(info.readAll()).section(u"iff:\t"_s, 1).section(u'\n', 0, 0).trimmed();
+            if (!ifaces.contains(iff))
+                continue;
+            const int pfd = int(::syscall(SYS_pidfd_open, pid, 0));
+            if (pfd < 0 || ::syscall(SYS_pidfd_send_signal, pfd, SIGTERM, nullptr, 0) != 0) {
+                if (pfd >= 0)
+                    ::close(pfd);
+                break;
+            }
+            QFile comm(base + u"/comm"_s);
+            const QString name = comm.open(QIODevice::ReadOnly) ? QString::fromUtf8(comm.readAll().trimmed()) : entry;
+            stopped << u"%1 (%2)"_s.arg(name, iff);
+            owned << iff;
+            procs << pollfd{pfd, POLLIN, 0};
+            break;
+        }
+    }
+    const auto waitExit = [&procs](int ms) {
+        QElapsedTimer t;
+        t.start();
+        while (t.elapsed() < ms && std::any_of(procs.cbegin(), procs.cend(), [](const pollfd &p) { return !(p.revents & POLLIN); }))
+            ::poll(procs.data(), procs.size(), int(ms - t.elapsed()));
+    };
+    waitExit(3000);
+    for (const pollfd &p : std::as_const(procs))
+        if (!(p.revents & POLLIN))
+            ::syscall(SYS_pidfd_send_signal, p.fd, SIGKILL, nullptr, 0);
+    waitExit(1000);
+    for (const pollfd &p : std::as_const(procs))
+        ::close(p.fd);
+    for (const QString &iface : ifaces) {
+        if (owned.contains(iface))
+            continue;
+        int rc = -1;
+        run(u"ip"_s, {u"link"_s, u"del"_s, iface}, &rc);
+        if (rc == 0)
+            stopped << iface;
+    }
+    return stopped;
 }
 
 bool ipForwarding()

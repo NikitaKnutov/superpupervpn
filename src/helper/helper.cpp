@@ -261,6 +261,11 @@ void Helper::dispatch(QLocalSocket *s, const QJsonObject &req)
         testDelay(s, id, params);
     } else if (method == u"diagnostics") {
         diagnostics(s, id);
+    } else if (method == u"stopOtherVpns") {
+        const QStringList stopped = platform::stopOtherVpns();
+        if (!stopped.isEmpty())
+            log(u"helper"_s, u"warning"_s, u"остановлены другие VPN: %1"_s.arg(stopped.join(u", "_s)));
+        reply(s, id, {{u"stopped"_s, QJsonArray::fromStringList(stopped)}});
     } else {
         replyError(s, id, MethodNotFound, u"неизвестный метод"_s);
     }
@@ -270,7 +275,7 @@ QJsonObject Helper::helloResult() const
 {
     return {{u"helperVersion"_s, QStringLiteral(SUPERPUPERVPN_VERSION)}, {u"coreVersion"_s, m_coreVersion},
             {u"protocol"_s, ipc::kProtocolMajor},
-            {u"capabilities"_s, QJsonArray{u"tun"_s, u"proxy"_s, u"testDelay"_s, u"diagnostics"_s}}};
+            {u"capabilities"_s, QJsonArray{u"tun"_s, u"proxy"_s, u"testDelay"_s, u"diagnostics"_s, u"stopOtherVpns"_s}}};
 }
 
 std::optional<FieldError> Helper::connectCore(const QJsonObject &params)

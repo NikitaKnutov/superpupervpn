@@ -106,7 +106,7 @@ ColumnLayout {
     Component {
         id: headerRow
         Item {
-            readonly property var m: parent ? parent.model : ({})
+            readonly property var m: parent && parent.model ? parent.model : ({})
             width: parent ? parent.width : 0
             implicitHeight: col.implicitHeight + 8
             ColumnLayout {
@@ -210,7 +210,7 @@ ColumnLayout {
         id: serverRow
         ItemDelegate {
             id: row
-            readonly property var m: parent ? parent.model : ({})
+            readonly property var m: parent && parent.model ? parent.model : ({})
             height: 68
             Accessible.name: m.name
             onClicked: { const id = row.m.profileId; App.testProfile(id); App.selectProfile(id) }

@@ -367,12 +367,16 @@ void Helper::onCoreReady()
             return;
         const QJsonObject o = QJsonDocument::fromJson(r->readAll()).object();
         if (r->error() != QNetworkReply::NoError || !o.contains(u"delay"_s)) {
-            const QString why = u"сервер не отвечает (%1)"_s.arg(o.value(u"message"_s).toString(r->errorString()));
+            QString why = u"сервер не отвечает (%1)"_s.arg(o.value(u"message"_s).toString(r->errorString()));
+            if (const QStringList other = platform::conflictingAdapters(); !other.isEmpty())
+                why += u". Включён другой VPN (%1) — выключите его"_s.arg(other.join(u", "_s));
             log(u"helper"_s, u"warning"_s, why);
             m_core->stop();
             onCoreFailed(m_attempts == 0, why);
             return;
         }
+        if (const QStringList other = platform::conflictingAdapters(); !other.isEmpty())
+            log(u"helper"_s, u"warning"_s, u"включён другой VPN (%1): трафик может идти мимо SuperPuperVPN"_s.arg(other.join(u", "_s)));
         m_stable->start();
         m_core->watchTraffic();
         setState(u"connected"_s, {{u"profileId"_s, m_profile.id}, {u"mode"_s, m_settings.mode},

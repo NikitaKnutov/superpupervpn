@@ -133,7 +133,9 @@ QStringList conflictingAdapters()
     static const QRegularExpression vpnName(u"^(tun|tap|wg|tailscale|zt|nordlynx|proton|warp|utun)"_s);
     QStringList out;
     for (const QNetworkInterface &i : QNetworkInterface::allInterfaces())
-        if (i.flags().testFlag(QNetworkInterface::IsUp) && i.name() != u"superpupervpn" && vpnName.match(i.name()).hasMatch())
+        if (i.flags().testFlag(QNetworkInterface::IsUp) && i.name() != u"superpupervpn"
+            && (vpnName.match(i.name()).hasMatch()
+                || (i.flags().testFlag(QNetworkInterface::IsPointToPoint) && i.type() != QNetworkInterface::Ppp)))
             out << i.name();
     return out;
 }

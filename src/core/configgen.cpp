@@ -44,6 +44,7 @@ QJsonObject baseConfig(const QString &logLevel)
         {u"allow-lan"_s, false},
         {u"bind-address"_s, u"127.0.0.1"_s},
         {u"skip-auth-prefixes"_s, QJsonArray()},
+        {u"profile"_s, QJsonObject{{u"store-selected"_s, false}}},
     };
 }
 

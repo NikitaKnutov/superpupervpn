@@ -5,6 +5,7 @@
 #include <windows.h>
 #include <wininet.h>
 #include <ras.h>
+#include <raserror.h>
 
 #include <vector>
 

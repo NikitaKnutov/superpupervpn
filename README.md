@@ -176,16 +176,6 @@ tools        make-geo.py: rebuilds assets/geo/country.bin from the DB-IP Lite CS
 licenses     third-party license texts shipped with the packages
 ```
 
-### Releasing
-
-Bump the version in `CMakeLists.txt` and `packaging/linux/superpupervpn.spec`, commit, then push a tag:
-
-```bash
-git tag v0.1.1 && git push origin v0.1.1
-```
-
-GitHub Actions builds the RPM, MSI and ZIP and publishes them as a release.
-
 ## License
 
 SuperPuperVPN itself: © Nikita Knutov, all rights reserved.

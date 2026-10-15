@@ -85,7 +85,9 @@ jobs:
           Get-ChildItem "$env:VCToolsRedistDir/x64/Microsoft.VC*.CRT/*.dll" | Copy-Item -Destination deploy/
           Copy-Item licenses deploy/licenses -Recurse
           dotnet tool install --global wix --version 5.0.2
-          wix build packaging/windows/superpupervpn.wxs -arch x64 -d Version=$env:VERSION -d Deploy=deploy -o "SuperPuperVPN-$env:VERSION-windows-x64.msi"
+          $deployDir = (Resolve-Path deploy).Path
+          wix build packaging/windows/superpupervpn.wxs -arch x64 -d Version=$env:VERSION -d "Deploy=$deployDir" -o "SuperPuperVPN-$env:VERSION-windows-x64.msi"
+          if ((Get-Item "SuperPuperVPN-$env:VERSION-windows-x64.msi").Length -lt 10MB) { throw "MSI is suspiciously small" }
           Compress-Archive -Path deploy/* -DestinationPath "SuperPuperVPN-$env:VERSION-windows-x64.zip"
       - uses: actions/upload-artifact@v4
         with:

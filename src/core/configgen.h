@@ -23,6 +23,7 @@ struct CoreRuntime {
     QString secret;
     int proxyPort = 0;
     bool autoRedirect = false;
+    QString interfaceName;
 };
 
 inline constexpr char16_t kDirectDns[] = u"77.88.8.8";

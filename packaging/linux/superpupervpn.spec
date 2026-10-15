@@ -1,7 +1,7 @@
 %global mihomo_version v1.19.32
 
 Name:           superpupervpn
-Version:        0.1.2
+Version:        0.1.3
 Release:        1%{?dist}
 Summary:        SuperPuperVPN, a VLESS/REALITY desktop client
 License:        LicenseRef-Proprietary AND GPL-3.0-only AND OFL-1.1
@@ -74,6 +74,10 @@ fi
 %{_datadir}/icons/hicolor/scalable/apps/superpupervpn.svg
 
 %changelog
+* Thu Oct 15 2026 SuperPuperVPN <noreply@superpupervpn.invalid> - 0.1.3-1
+- Proxy mode and ping reach the server past other VPNs
+- Diagnostics opens a report with a button to turn off other VPNs
+
 * Thu Oct 15 2026 SuperPuperVPN <noreply@superpupervpn.invalid> - 0.1.2-1
 - Detect any other VPN tunnel and offer to turn it off before connecting
 

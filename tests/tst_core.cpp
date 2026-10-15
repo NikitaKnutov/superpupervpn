@@ -214,9 +214,10 @@ private slots:
         const Profile p = parseLink(reality()).profile;
         CoreSettings s;
         s.mode = u"proxy"_s;
-        CoreRuntime rt{u"/run/superpupervpn/core/core.sock"_s, QString(), u"secret"_s, 34567, false};
+        CoreRuntime rt{u"/run/superpupervpn/core/core.sock"_s, QString(), u"secret"_s, 34567, false, u"wlp4s0"_s};
         const QJsonObject c = buildCoreConfig(p, s, rt);
         checkCommonSecurity(c);
+        QCOMPARE(c.value(u"interface-name"_s).toString(), u"wlp4s0"_s);
         const QJsonArray l = c.value(u"listeners"_s).toArray();
         QCOMPARE(l.size(), 1);
         QCOMPARE(l[0][u"listen"_s].toString(), u"127.0.0.1"_s);
@@ -230,10 +231,11 @@ private slots:
     {
         const Profile p = parseLink(reality()).profile;
         CoreSettings s;
-        CoreRuntime rt{u"/run/superpupervpn/core/core.sock"_s, QString(), u"secret"_s, 0, true};
+        CoreRuntime rt{u"/run/superpupervpn/core/core.sock"_s, QString(), u"secret"_s, 0, true, u"wlp4s0"_s};
         const QJsonObject c = buildCoreConfig(p, s, rt);
         checkCommonSecurity(c);
         QVERIFY(!c.contains(u"listeners"_s));
+        QVERIFY(!c.contains(u"interface-name"_s));
         const QJsonObject tun = c.value(u"tun"_s).toObject();
         QCOMPARE(tun.value(u"strict-route"_s).toBool(), true);
         QCOMPARE(tun.value(u"device"_s).toString(), u"superpupervpn"_s);

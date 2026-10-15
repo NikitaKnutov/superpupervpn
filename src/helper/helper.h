@@ -68,6 +68,7 @@ private:
     bool m_maskHosts = true;
     int m_attempts = 0;
     int m_proxyPort = 0;
+    QString m_iface;
     QTimer *m_retry;
     QTimer *m_stable;
     QTimer *m_netDebounce;

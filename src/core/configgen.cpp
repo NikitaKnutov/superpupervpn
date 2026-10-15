@@ -169,6 +169,8 @@ QJsonObject buildCoreConfig(const Profile &p, const CoreSettings &s, const CoreR
         c[u"listeners"_s] = QJsonArray{QJsonObject{{u"name"_s, u"sysproxy"_s}, {u"type"_s, u"mixed"_s},
                                                    {u"listen"_s, u"127.0.0.1"_s}, {u"port"_s, rt.proxyPort},
                                                    {u"udp"_s, false}}};
+        if (!rt.interfaceName.isEmpty())
+            c[u"interface-name"_s] = rt.interfaceName;
     }
 
     const QString direct = QString::fromUtf16(kDirectDns);

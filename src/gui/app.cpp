@@ -324,7 +324,8 @@ void App::connectNow()
         m_diag = d.toVariantMap();
         emit diagnosticsChanged();
         const QString signature = issues.join(u'|');
-        if (!issues.isEmpty() && signature != m_storage->settings.value(u"ackConflicts"_s).toString()) {
+        if (!issues.isEmpty() && m_storage->settings.value(u"mode"_s) == u"tun"_s
+            && signature != m_storage->settings.value(u"ackConflicts"_s).toString()) {
             emit confirmConflicts(u"• "_s + issues.join(u"\n• "_s));
             return;
         }
@@ -345,16 +346,20 @@ void App::acknowledgeConflicts()
     doConnect();
 }
 
-void App::stopOtherVpns()
+void App::stopOtherVpns(bool connectAfter)
 {
-    m_helper->call(u"stopOtherVpns"_s, {}, [this](const QJsonObject &r, const QJsonObject &e) {
+    m_helper->call(u"stopOtherVpns"_s, {}, [this, connectAfter](const QJsonObject &r, const QJsonObject &e) {
         const QStringList stopped = r.value(u"stopped"_s).toVariant().toStringList();
         if (!e.isEmpty() || stopped.isEmpty()) {
             emit toast(e.isEmpty() ? tr("Не удалось выключить другие VPN") : e.value(u"message"_s).toString());
+            runDiagnostics();
             return;
         }
         emit toast(tr("Выключено: %1").arg(stopped.join(u", "_s)));
-        connectNow();
+        if (connectAfter)
+            connectNow();
+        else
+            runDiagnostics();
     });
 }
 

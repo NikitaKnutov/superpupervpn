@@ -5,7 +5,6 @@ import QtQuick.Layouts
 ScrollView {
     id: page
     contentWidth: availableWidth
-    function showService() { contentItem.contentY = serviceTitle.y; App.runDiagnostics() }
 
     component SectionTitle: Label {
         Layout.topMargin: Theme.grid * 2

@@ -132,7 +132,7 @@ reported as unsupported.
 |---|---|
 | «Служба не запущена» (service is not running) | *«Настройки» → «Служба» → «Запустить»*, or `sudo systemctl start superpupervpn-helper` |
 | «сервер не отвечает» (server does not respond) | The server refused the handshake or is unreachable. Check the link with another client; get a fresh link from your panel. |
-| Proxy mode times out, or TUN connects but nothing loads | Another VPN is running and takes the traffic. When you connect, the app lists it; press *«Выключить другие VPN и подключить»* (turn off other VPNs and connect). |
+| TUN connects but nothing loads | Another VPN is running and takes the traffic. The app lists it before connecting and in *«Диагностика»*; press *«Выключить другие VPN»* (turn off other VPNs), or use proxy mode, which works next to other VPNs. |
 | No tray icon on GNOME | Install and enable the AppIndicator extension. |
 | Proxy mode does not work in a terminal | CLI tools ignore the desktop proxy setting; use TUN mode. |
 

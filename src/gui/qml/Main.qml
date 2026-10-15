@@ -42,7 +42,7 @@ ApplicationWindow {
     }
 
     function showServers() { page = 1 }
-    function showDiagnostics() { page = 3; settingsPage.showService() }
+    function showDiagnostics() { diagDialog.open() }
 
     Connections {
         target: App
@@ -248,7 +248,7 @@ ApplicationWindow {
                 visible: (App.diagnostics.conflictingAdapters || []).length > 0
                 accent: true
                 text: qsTr("Выключить другие VPN и подключить")
-                onClicked: { conflictDialog.close(); App.stopOtherVpns() }
+                onClicked: { conflictDialog.close(); App.stopOtherVpns(true) }
             }
             RowLayout {
                 Layout.fillWidth: true
@@ -260,6 +260,68 @@ ApplicationWindow {
                     text: qsTr("Всё равно подключить")
                     onClicked: { conflictDialog.close(); App.acknowledgeConflicts() }
                 }
+            }
+        }
+    }
+
+    Sheet {
+        id: diagDialog
+        readonly property var d: App.diagnostics
+        readonly property var other: d.conflictingAdapters || []
+        title: qsTr("Диагностика")
+        onOpened: App.runDiagnostics()
+        contentItem: ColumnLayout {
+            spacing: Theme.grid * 1.5
+            Repeater {
+                model: [
+                    [qsTr("Служба"), App.helperReady ? qsTr("работает") + (diagDialog.d.helperVersion ? " · " + diagDialog.d.helperVersion : "") : qsTr("не запущена")],
+                    [qsTr("Ядро"), diagDialog.d.coreVersion ? "mihomo " + diagDialog.d.coreVersion : "—"],
+                    [qsTr("Другие VPN"), diagDialog.other.length > 0 ? diagDialog.other.join(", ") : qsTr("не найдены")],
+                    [qsTr("Внешний IP"), diagDialog.d.externalIp || (App.state === "connected" ? qsTr("не определён") : qsTr("нет подключения"))]
+                ]
+                RowLayout {
+                    required property var modelData
+                    Layout.fillWidth: true
+                    spacing: Theme.grid
+                    Label { text: parent.modelData[0]; color: Theme.muted }
+                    Label {
+                        Layout.fillWidth: true
+                        horizontalAlignment: Text.AlignRight
+                        wrapMode: Text.Wrap
+                        textFormat: Text.PlainText
+                        text: parent.modelData[1]
+                        color: Theme.text
+                    }
+                }
+            }
+            Label {
+                visible: !!diagDialog.d.ipForwarding || !!diagDialog.d.hotspot
+                Layout.fillWidth: true
+                wrapMode: Text.Wrap
+                color: Theme.error
+                font.pixelSize: Theme.xs
+                text: diagDialog.d.hotspot ? qsTr("Включена мобильная точка доступа Windows — она может мешать режиму TUN")
+                                          : qsTr("Включена пересылка IP (IP forwarding) — она может мешать режиму TUN")
+            }
+            PillButton {
+                Layout.fillWidth: true
+                visible: !App.helperReady
+                accent: true
+                text: qsTr("Запустить службу")
+                onClicked: App.startService(false)
+            }
+            PillButton {
+                Layout.fillWidth: true
+                visible: App.helperReady && diagDialog.other.length > 0
+                accent: true
+                text: qsTr("Выключить другие VPN")
+                onClicked: App.stopOtherVpns(false)
+            }
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: Theme.grid
+                PillButton { Layout.fillWidth: true; text: qsTr("Проверить снова"); enabled: App.helperReady; onClicked: App.runDiagnostics() }
+                PillButton { Layout.fillWidth: true; text: qsTr("Закрыть"); onClicked: diagDialog.close() }
             }
         }
     }

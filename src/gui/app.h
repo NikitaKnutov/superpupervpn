@@ -94,7 +94,7 @@ public:
     Q_INVOKABLE void disconnectNow();
     Q_INVOKABLE void selectProfile(const QString &id);
     Q_INVOKABLE void acknowledgeConflicts();
-    Q_INVOKABLE void stopOtherVpns();
+    Q_INVOKABLE void stopOtherVpns(bool connectAfter);
     Q_INVOKABLE void setInsecureConsent(const QString &id, bool consent);
 
     Q_INVOKABLE QVariantMap importFromClipboard();

@@ -250,6 +250,7 @@ QString physicalInterface()
     PMIB_IPFORWARD_TABLE2 table = nullptr;
     if (GetIpForwardTable2(AF_INET, &table) != NO_ERROR)
         return {};
+    const QStringList other = conflictingAdapters();
     QString best;
     ULONG bestMetric = ULONG_MAX;
     for (ULONG i = 0; i < table->NumEntries; ++i) {
@@ -258,7 +259,7 @@ QString physicalInterface()
             continue;
         wchar_t alias[IF_MAX_STRING_SIZE + 1] = {};
         if (ConvertInterfaceLuidToAlias(&r.InterfaceLuid, alias, IF_MAX_STRING_SIZE) != NO_ERROR
-            || wide(alias) == u"superpupervpn")
+            || wide(alias) == u"superpupervpn" || other.contains(wide(alias)))
             continue;
         MIB_IPINTERFACE_ROW iface{};
         iface.Family = AF_INET;

@@ -224,12 +224,14 @@ QString physicalInterface()
     QFile f(u"/proc/net/route"_s);
     if (!f.open(QIODevice::ReadOnly))
         return {};
+    const QStringList other = conflictingAdapters();
     QString best;
     int bestMetric = INT_MAX;
     f.readLine();
     while (!f.atEnd()) {
         const QList<QByteArray> c = f.readLine().simplified().split(' ');
-        if (c.size() < 8 || c[1] != "00000000" || c[7] != "00000000" || c[0] == "superpupervpn")
+        if (c.size() < 8 || c[1] != "00000000" || c[7] != "00000000" || c[0] == "superpupervpn"
+            || other.contains(QString::fromLatin1(c[0])))
             continue;
         if (const int metric = c[6].toInt(); metric < bestMetric) {
             bestMetric = metric;

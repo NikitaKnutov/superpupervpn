@@ -327,7 +327,8 @@ void Helper::startCore()
     if (!m_wanted)
         return;
     m_retry->stop();
-    if (m_core->isRunning())
+    const bool restarting = m_core->isRunning();
+    if (restarting)
         m_core->stop();
     platform::cleanupStaleNetwork();
 
@@ -340,7 +341,7 @@ void Helper::startCore()
     }
     CoreRuntime rt = m_core->prepare();
     if (m_settings.mode == u"proxy") {
-        rt.proxyPort = pickProxyPort(m_attempts > 0 ? m_proxyPort : 0);
+        rt.proxyPort = pickProxyPort(m_attempts > 0 || restarting ? m_proxyPort : 0);
         if (!rt.proxyPort) {
             m_wanted = false;
             setState(u"error"_s, {{u"message"_s, u"нет свободного локального порта"_s}});
@@ -350,6 +351,9 @@ void Helper::startCore()
 #ifdef Q_OS_LINUX
     rt.autoRedirect = m_settings.mode == u"tun";
 #endif
+    m_iface = platform::physicalInterface();
+    if (m_settings.mode == u"proxy")
+        rt.interfaceName = m_iface;
     m_proxyPort = rt.proxyPort;
     for (const QString &secret : m_profile.secrets())
         m_core->masker.addSecret(secret);
@@ -372,15 +376,13 @@ void Helper::onCoreReady()
             return;
         const QJsonObject o = QJsonDocument::fromJson(r->readAll()).object();
         if (r->error() != QNetworkReply::NoError || !o.contains(u"delay"_s)) {
-            QString why = u"сервер не отвечает (%1)"_s.arg(o.value(u"message"_s).toString(r->errorString()));
-            if (const QStringList other = platform::conflictingAdapters(); !other.isEmpty())
-                why += u". Включён другой VPN (%1) — выключите его"_s.arg(other.join(u", "_s));
+            const QString why = u"сервер не отвечает (%1)"_s.arg(o.value(u"message"_s).toString(r->errorString()));
             log(u"helper"_s, u"warning"_s, why);
             m_core->stop();
             onCoreFailed(m_attempts == 0, why);
             return;
         }
-        if (const QStringList other = platform::conflictingAdapters(); !other.isEmpty())
+        if (const QStringList other = platform::conflictingAdapters(); m_settings.mode == u"tun" && !other.isEmpty())
             log(u"helper"_s, u"warning"_s, u"включён другой VPN (%1): трафик может идти мимо SuperPuperVPN"_s.arg(other.join(u", "_s)));
         m_stable->start();
         m_core->watchTraffic();
@@ -424,6 +426,11 @@ void Helper::onNetworkChanged()
 {
     if (!m_wanted || !m_core->isReady())
         return;
+    if (m_settings.mode == u"proxy" && platform::physicalInterface() != m_iface) {
+        log(u"helper"_s, u"info"_s, u"сменился сетевой интерфейс — перезапускаю ядро"_s);
+        startCore();
+        return;
+    }
     log(u"helper"_s, u"info"_s, u"сеть изменилась — сбрасываю соединения"_s);
     QNetworkReply *r = m_core->del(u"/connections"_s);
     connect(r, &QNetworkReply::finished, r, &QObject::deleteLater);
@@ -484,7 +491,7 @@ void Helper::testDelay(QLocalSocket *s, const QJsonValue &id, const QJsonObject 
             m_test->masker.addSecret(secret);
         m_test->masker.addHost(p.host);
     }
-    const QString iface = m_settings.mode == u"tun" && m_core->isRunning() ? platform::physicalInterface() : QString();
+    const QString iface = platform::physicalInterface();
 
     auto finishJob = [this, job] {
         reply(job->socket, job->id, {{u"count"_s, job->done}});

@@ -10,6 +10,7 @@
 #include <QWinEventNotifier>
 
 #include <winsock2.h>
+#include <ws2ipdef.h>
 #include <windows.h>
 #include <aclapi.h>
 #include <iphlpapi.h>

@@ -65,7 +65,7 @@ jobs:
         shell: cmd
         run: |
           cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DSUPERPUPERVPN_CORE_SHA256=%CORE_SHA256% "-DOPENSSL_ROOT_DIR=%OPENSSL_ROOT%" || exit /b 1
-          cmake --build build || exit /b 1
+          cmake --build build -- -k 0 || exit /b 1
           ctest --test-dir build --output-on-failure || exit /b 1
       - name: Package
         shell: pwsh

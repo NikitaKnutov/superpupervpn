@@ -1,8 +1,8 @@
 %global mihomo_version v1.19.32
 
 Name:           superpupervpn
-Version:        0.1.0
-Release:        5%{?dist}
+Version:        0.1.1
+Release:        1%{?dist}
 Summary:        SuperPuperVPN, a VLESS/REALITY desktop client
 License:        LicenseRef-Proprietary AND GPL-3.0-only AND OFL-1.1
 URL:            https://github.com/NikitaKnutov/superpupervpn
@@ -74,6 +74,9 @@ fi
 %{_datadir}/icons/hicolor/scalable/apps/superpupervpn.svg
 
 %changelog
+* Thu Oct 15 2026 SuperPuperVPN <noreply@superpupervpn.invalid> - 0.1.1-1
+- Install on Fedora 42 and newer: no dependency on private Qt API
+
 * Thu Oct 15 2026 SuperPuperVPN <noreply@superpupervpn.invalid> - 0.1.0-5
 - Theme: light or dark only
 

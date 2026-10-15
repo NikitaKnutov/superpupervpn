@@ -25,6 +25,7 @@ set_source_files_properties(qml/Theme.qml PROPERTIES QT_QML_SINGLETON_TYPE TRUE)
 qt_add_qml_module(superpupervpn
     URI SuperPuperVPN
     VERSION 1.0
+    NO_CACHEGEN
     QML_FILES
         qml/Main.qml qml/Theme.qml qml/HomePage.qml qml/ServersPage.qml qml/LogsPage.qml qml/SettingsPage.qml
         qml/ImportDialog.qml qml/ProfileDialog.qml qml/Onboarding.qml

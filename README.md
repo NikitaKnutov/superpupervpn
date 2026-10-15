@@ -69,7 +69,9 @@ A portable `.zip` is attached as well; in that case run `superpupervpn-helper.ex
 > Windows support is new. If something does not work, please open an issue with the log export
 > (*«Логи» → «Экспорт»*).
 
-### Fedora Linux (x86_64)
+### Fedora Linux 42 or newer (x86_64)
+
+One RPM fits every supported Fedora release, so the `fc43` in its name is expected on Fedora 44 and 45 too.
 
 ```bash
 sudo dnf install ./superpupervpn-*.x86_64.rpm

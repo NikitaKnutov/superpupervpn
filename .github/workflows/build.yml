@@ -9,7 +9,7 @@ on:
 jobs:
   linux:
     runs-on: ubuntu-latest
-    container: fedora:44
+    container: fedora:43
     steps:
       - uses: actions/checkout@v4
       - name: Dependencies
@@ -21,11 +21,34 @@ jobs:
           tar --exclude=.git --transform "s,^\.,superpupervpn-$VERSION," -czf ~/rpmbuild/SOURCES/superpupervpn-$VERSION.tar.gz .
           spectool -g -C ~/rpmbuild/SOURCES packaging/linux/superpupervpn.spec
       - name: Build, test, package
-        run: rpmbuild -bb packaging/linux/superpupervpn.spec
+        run: |
+          rpmbuild -bb packaging/linux/superpupervpn.spec
+          if rpm -qp --requires ~/rpmbuild/RPMS/x86_64/superpupervpn-[0-9]*.rpm | grep PRIVATE_API; then
+            echo "package depends on private Qt API" && exit 1
+          fi
       - uses: actions/upload-artifact@v4
         with:
           name: linux
           path: ~/rpmbuild/RPMS/x86_64/superpupervpn-[0-9]*.rpm
+
+  linux-install:
+    needs: linux
+    strategy:
+      fail-fast: false
+      matrix:
+        fedora: ['43', '44', '45']
+    runs-on: ubuntu-latest
+    container: fedora:${{ matrix.fedora }}
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: linux
+      - name: Install and start
+        run: |
+          dnf install -y ./superpupervpn-*.rpm
+          rc=0
+          QT_QPA_PLATFORM=offscreen timeout 10 superpupervpn || rc=$?
+          [ "$rc" = 124 ] || { echo "superpupervpn exited with $rc"; exit 1; }
 
   windows:
     runs-on: windows-latest
@@ -98,7 +121,7 @@ jobs:
 
   release:
     if: startsWith(github.ref, 'refs/tags/v')
-    needs: [linux, windows]
+    needs: [linux, linux-install, windows]
     runs-on: ubuntu-latest
     permissions:
       contents: write

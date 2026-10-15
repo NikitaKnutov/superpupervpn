@@ -70,7 +70,11 @@ jobs:
       - name: Package
         shell: pwsh
         run: |
-          Copy-Item build/src/gui/superpupervpn.exe, build/src/helper/superpupervpn-helper.exe deploy/
+          foreach ($name in 'superpupervpn.exe', 'superpupervpn-helper.exe') {
+            $exe = Get-ChildItem build -Recurse -Filter $name | Select-Object -First 1
+            if (-not $exe) { throw "$name not found" }
+            Copy-Item $exe.FullName deploy/
+          }
           windeployqt --release --qmldir src/gui/qml deploy/superpupervpn.exe
           windeployqt --release deploy/superpupervpn-helper.exe
           New-Item -ItemType Directory deploy/imageformats, deploy/iconengines -Force | Out-Null

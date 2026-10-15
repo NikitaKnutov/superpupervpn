@@ -1,0 +1,12 @@
+add_executable(tst_core tst_core.cpp)
+target_link_libraries(tst_core PRIVATE libcore Qt6::Test)
+target_compile_definitions(tst_core PRIVATE SUPERPUPERVPN_GEO_TABLE="${PROJECT_SOURCE_DIR}/assets/geo/country.bin")
+add_test(NAME tst_core COMMAND tst_core)
+
+if(SUPERPUPERVPN_BUILD_GUI)
+    add_executable(tst_gui tst_gui.cpp)
+    target_include_directories(tst_gui PRIVATE ${PROJECT_SOURCE_DIR}/src/gui)
+    target_compile_definitions(tst_gui PRIVATE SUPERPUPERVPN_QML_DIR="${PROJECT_SOURCE_DIR}/src/gui/qml")
+    target_link_libraries(tst_gui PRIVATE Qt6::Gui Qt6::Test)
+    add_test(NAME tst_gui COMMAND tst_gui)
+endif()

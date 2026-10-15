@@ -1,0 +1,25 @@
+[Unit]
+Description=SuperPuperVPN helper: runs the mihomo core
+Documentation=https://github.com/NikitaKnutov/superpupervpn
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/usr/libexec/superpupervpn/superpupervpn-helper
+Restart=on-failure
+RestartSec=2
+RuntimeDirectory=superpupervpn
+RuntimeDirectoryMode=0755
+StateDirectory=superpupervpn
+StateDirectoryMode=0700
+CapabilityBoundingSet=CAP_NET_ADMIN CAP_NET_BIND_SERVICE CAP_NET_RAW
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+ProtectControlGroups=yes
+KillMode=control-group
+
+[Install]
+WantedBy=multi-user.target

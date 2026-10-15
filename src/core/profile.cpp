@@ -1,0 +1,272 @@
+#include "profile.h"
+
+#include <QCryptographicHash>
+#include <QHostAddress>
+#include <QJsonDocument>
+#include <QRegularExpression>
+#include <QSet>
+
+using namespace Qt::StringLiterals;
+
+namespace rl {
+namespace {
+const QSet<QString> kNetworks = {u"tcp"_s, u"ws"_s, u"grpc"_s, u"httpupgrade"_s, u"xhttp"_s, u"http"_s};
+const QSet<QString> kFingerprints = {u"chrome"_s, u"firefox"_s, u"safari"_s, u"ios"_s, u"android"_s,
+                                     u"edge"_s, u"360"_s, u"qq"_s, u"random"_s, u"randomized"_s};
+const QSet<QString> kFlows = {QString(), u"xtls-rprx-vision"_s, u"xtls-rprx-vision-udp443"_s};
+const QSet<QString> kGrpcModes = {u"gun"_s, u"multi"_s, u"guna"_s};
+const QSet<QString> kXhttpModes = {u"auto"_s, u"packet-up"_s, u"stream-up"_s, u"stream-one"_s};
+const QSet<QString> kXhttpExtraKeys = {u"headers"_s, u"xPaddingBytes"_s, u"noGRPCHeader"_s,
+                                       u"scMaxEachPostBytes"_s, u"scMinPostsIntervalMs"_s};
+
+bool hasControlChars(const QString &s)
+{
+    for (QChar c : s)
+        if (c.category() == QChar::Other_Control)
+            return true;
+    return false;
+}
+
+bool isDomain(const QString &s)
+{
+    static const QRegularExpression re(u"^(?=.{1,253}$)([A-Za-z0-9_]([A-Za-z0-9_-]{0,61}[A-Za-z0-9_])?\\.)*"
+                                       u"[A-Za-z0-9_]([A-Za-z0-9_-]{0,61}[A-Za-z0-9_])?\\.?$"_s);
+    return re.match(s).hasMatch();
+}
+
+bool isHostOrIp(const QString &s)
+{
+    return !QHostAddress(s).isNull() || isDomain(s);
+}
+
+FieldError err(const QString &field, const QString &reason)
+{
+    return {FieldError::Format, field, reason};
+}
+
+FieldError unsupported(const QString &field, const QString &reason)
+{
+    return {FieldError::UnsupportedParam, field, reason};
+}
+
+}
+
+bool isRfc4122Uuid(const QString &s)
+{
+    static const QRegularExpression re(
+        u"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"_s);
+    return re.match(s).hasMatch();
+}
+
+bool Profile::nonStandardId() const
+{
+    return !isRfc4122Uuid(uuid);
+}
+
+QString Profile::badge() const
+{
+    return security == u"none" ? u"VLESS"_s : u"VLESS · "_s + security.toUpper();
+}
+
+QString Profile::identityKey() const
+{
+    const QStringList parts = {host, QString::number(port), uuid, network, encryption, flow, security,
+                               sni, pbk, sid, path, hostHeader, serviceName, mode};
+    return QString::fromLatin1(QCryptographicHash::hash(parts.join(QChar(0x1f)).toUtf8(),
+                                                        QCryptographicHash::Sha256).toHex());
+}
+
+QStringList Profile::secrets() const
+{
+    return {uuid, pbk, sid};
+}
+
+QJsonObject Profile::toJson() const
+{
+    return {
+        {u"id"_s, id}, {u"subscriptionId"_s, subscriptionId}, {u"protocol"_s, u"vless"_s},
+        {u"name"_s, name}, {u"host"_s, host}, {u"port"_s, port}, {u"uuid"_s, uuid},
+        {u"network"_s, network}, {u"encryption"_s, encryption}, {u"flow"_s, flow},
+        {u"security"_s, security}, {u"sni"_s, sni}, {u"fp"_s, fp}, {u"pbk"_s, pbk},
+        {u"sid"_s, sid}, {u"spx"_s, spx}, {u"alpn"_s, alpn}, {u"path"_s, path},
+        {u"hostHeader"_s, hostHeader}, {u"serviceName"_s, serviceName}, {u"mode"_s, mode},
+        {u"extra"_s, extra}, {u"ech"_s, ech}, {u"pcs"_s, pcs}, {u"vcn"_s, vcn},
+        {u"insecure"_s, insecure}, {u"insecureConsent"_s, insecureConsent}, {u"pinned"_s, pinned},
+        {u"unknownParams"_s, unknownParams},
+    };
+}
+
+Profile Profile::fromJson(const QJsonObject &o)
+{
+    Profile p;
+    auto s = [&](const char16_t *k) { return o.value(QString::fromUtf16(k)).toString(); };
+    p.id = s(u"id");
+    p.subscriptionId = s(u"subscriptionId");
+    p.name = s(u"name");
+    p.host = s(u"host");
+    p.port = o.value(u"port"_s).toInt();
+    p.uuid = s(u"uuid");
+    p.network = s(u"network");
+    p.encryption = s(u"encryption");
+    p.flow = s(u"flow");
+    p.security = s(u"security");
+    p.sni = s(u"sni");
+    p.fp = s(u"fp");
+    p.pbk = s(u"pbk");
+    p.sid = s(u"sid");
+    p.spx = s(u"spx");
+    p.alpn = s(u"alpn");
+    p.path = s(u"path");
+    p.hostHeader = s(u"hostHeader");
+    p.serviceName = s(u"serviceName");
+    p.mode = s(u"mode");
+    p.extra = s(u"extra");
+    p.ech = s(u"ech");
+    p.pcs = s(u"pcs");
+    p.vcn = s(u"vcn");
+    p.insecure = o.value(u"insecure"_s).toBool();
+    p.insecureConsent = o.value(u"insecureConsent"_s).toBool();
+    p.pinned = o.value(u"pinned"_s).toBool();
+    p.unknownParams = o.value(u"unknownParams"_s).toObject();
+    return p;
+}
+
+std::optional<FieldError> rejectUnknownKeys(const QJsonObject &profileJson)
+{
+    static const QStringList known = Profile().toJson().keys();
+    for (const QString &k : profileJson.keys())
+        if (!known.contains(k))
+            return err(k.left(32), u"неизвестное поле"_s);
+    return std::nullopt;
+}
+
+QString FieldError::text() const
+{
+    switch (kind) {
+    case UnsupportedProtocol: return u"Протокол не поддерживается"_s;
+    case UnsupportedParam: return reason;
+    case Format: break;
+    }
+    return field.isEmpty() ? reason : field + u": "_s + reason;
+}
+
+std::optional<FieldError> validate(const Profile &p)
+{
+    if (p.name.toUcs4().size() > 64)
+        return err(u"name"_s, u"длиннее 64 символов"_s);
+    if (hasControlChars(p.name))
+        return err(u"name"_s, u"содержит управляющие символы"_s);
+
+    if (p.host.isEmpty())
+        return err(u"host"_s, u"не указан"_s);
+    if (!isHostOrIp(p.host))
+        return err(u"host"_s, u"не домен и не IP-адрес"_s);
+    if (p.port < 1 || p.port > 65535)
+        return err(u"port"_s, u"должен быть от 1 до 65535"_s);
+
+    if (p.uuid.isEmpty())
+        return err(u"id"_s, u"пустой идентификатор"_s);
+    if (!isRfc4122Uuid(p.uuid)) {
+        if (p.uuid.toUtf8().size() > 30)
+            return err(u"id"_s, u"не UUID и длиннее 30 байт"_s);
+        if (hasControlChars(p.uuid))
+            return err(u"id"_s, u"содержит управляющие символы"_s);
+    }
+
+    if (p.network == u"kcp")
+        return unsupported(u"type"_s, u"Параметр type=kcp не поддерживается ядром mihomo"_s);
+    if (!kNetworks.contains(p.network))
+        return err(u"type"_s, u"неизвестный транспорт"_s);
+
+    if (p.encryption.isEmpty())
+        return err(u"encryption"_s, u"пустое значение"_s);
+    if (p.encryption != u"none" && !p.encryption.startsWith(u"mlkem768x25519plus."))
+        return err(u"encryption"_s, u"допустимо none или mlkem768x25519plus.*"_s);
+
+    if (!kFlows.contains(p.flow))
+        return unsupported(u"flow"_s, u"Значение flow не поддерживается ядром mihomo"_s);
+
+    if (p.security != u"none" && p.security != u"tls" && p.security != u"reality")
+        return err(u"security"_s, u"допустимо none, tls или reality"_s);
+    if (!p.flow.isEmpty() && (p.security == u"none" || p.network != u"tcp"))
+        return err(u"flow"_s, u"Vision работает только с tls/reality и type=tcp"_s);
+
+    if (p.security != u"none") {
+        if (!isHostOrIp(p.sni))
+            return err(u"sni"_s, u"не домен и не IP-адрес"_s);
+        if (!kFingerprints.contains(p.fp))
+            return err(u"fp"_s, u"недопустимый отпечаток"_s);
+    }
+    if (p.security == u"reality") {
+        static const QRegularExpression pbkRe(u"^[A-Za-z0-9_-]{43}$"_s);
+        if (p.pbk.isEmpty())
+            return err(u"pbk"_s, u"обязателен для reality"_s);
+        if (!pbkRe.match(p.pbk).hasMatch())
+            return err(u"pbk"_s, u"не ключ x25519 в base64url"_s);
+        static const QRegularExpression sidRe(u"^([0-9a-f]{2}){0,8}$"_s);
+        if (!sidRe.match(p.sid).hasMatch())
+            return err(u"sid"_s, u"ожидается hex чётной длины, до 16 символов"_s);
+    }
+
+    if (!p.spx.isEmpty() && p.spx != u"/")
+        return unsupported(u"spx"_s, u"Параметр spx не поддерживается ядром"_s);
+
+    if (!p.alpn.isEmpty()) {
+        for (const QString &a : p.alpn.split(u','))
+            if (a.isEmpty() || a.contains(QRegularExpression(u"\\s"_s)))
+                return err(u"alpn"_s, u"список через запятую без пробелов"_s);
+    }
+
+    const bool pathTransport = p.network == u"ws" || p.network == u"httpupgrade" || p.network == u"xhttp";
+    if (pathTransport && !p.path.startsWith(u'/'))
+        return err(u"path"_s, u"должен начинаться с /"_s);
+    if (hasControlChars(p.path) || hasControlChars(p.hostHeader) || hasControlChars(p.serviceName))
+        return err(u"path"_s, u"содержит управляющие символы"_s);
+    if (!p.hostHeader.isEmpty() && !isHostOrIp(p.hostHeader))
+        return err(u"host"_s, u"не домен и не IP-адрес"_s);
+
+    if (p.network == u"grpc") {
+        if (p.serviceName.isEmpty())
+            return err(u"serviceName"_s, u"обязателен для grpc"_s);
+        if (!kGrpcModes.contains(p.mode))
+            return err(u"mode"_s, u"для grpc допустимо gun, multi или guna"_s);
+    }
+    if (p.network == u"xhttp" && !kXhttpModes.contains(p.mode))
+        return err(u"mode"_s, u"для xhttp допустимо auto, packet-up, stream-up или stream-one"_s);
+
+    if (!p.extra.isEmpty()) {
+        if (p.network != u"xhttp")
+            return err(u"extra"_s, u"допустим только для xhttp"_s);
+        if (p.extra.toUtf8().size() > 4096)
+            return err(u"extra"_s, u"больше 4 КБ"_s);
+        const QJsonDocument doc = QJsonDocument::fromJson(p.extra.toUtf8());
+        if (!doc.isObject())
+            return err(u"extra"_s, u"не JSON-объект"_s);
+        const QJsonObject o = doc.object();
+        for (auto it = o.begin(); it != o.end(); ++it)
+            if (!kXhttpExtraKeys.contains(it.key()))
+                return unsupported(u"extra"_s, u"Ключ extra.%1 не поддерживается"_s.arg(it.key().left(32)));
+        const QJsonValue headers = o.value(u"headers"_s);
+        if (!headers.isUndefined()) {
+            if (!headers.isObject())
+                return err(u"extra"_s, u"headers должен быть объектом"_s);
+            for (const QJsonValue v : headers.toObject())
+                if (!v.isString() || hasControlChars(v.toString()))
+                    return err(u"extra"_s, u"значения headers должны быть строками"_s);
+        }
+    }
+
+    if (!p.ech.isEmpty()) {
+        static const QRegularExpression b64(u"^[A-Za-z0-9+/]+={0,2}$"_s);
+        if (p.ech.size() > 4096 || !b64.match(p.ech).hasMatch())
+            return unsupported(u"ech"_s, u"Формат параметра ech не поддерживается"_s);
+    }
+    if (!p.pcs.isEmpty() && !QRegularExpression(u"^[0-9a-fA-F]{64}$"_s).match(p.pcs).hasMatch())
+        return err(u"pcs"_s, u"ожидается hex SHA-256"_s);
+    if (!p.vcn.isEmpty())
+        return unsupported(u"vcn"_s, u"Параметр vcn не поддерживается"_s);
+
+    return std::nullopt;
+}
+
+}

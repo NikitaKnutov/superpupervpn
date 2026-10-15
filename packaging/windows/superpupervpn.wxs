@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  <Package Name="SuperPuperVPN" Manufacturer="SuperPuperVPN" Version="$(var.Version)" Scope="perMachine"
+           UpgradeCode="5B6C1E7A-3F7D-4C2E-9A61-2B8D0F4E7C31">
+    <MajorUpgrade DowngradeErrorMessage="A newer version of SuperPuperVPN is already installed." />
+    <MediaTemplate EmbedCab="yes" CompressionLevel="high" />
+
+    <StandardDirectory Id="ProgramFiles64Folder">
+      <Directory Id="INSTALLFOLDER" Name="SuperPuperVPN">
+        <Files Include="$(var.Deploy)\**">
+          <Exclude Files="$(var.Deploy)\superpupervpn-helper.exe" />
+        </Files>
+
+        <Component Id="HelperService">
+          <File Id="HelperExe" Source="$(var.Deploy)\superpupervpn-helper.exe" KeyPath="yes" />
+          <ServiceInstall Name="superpupervpn-helper" DisplayName="SuperPuperVPN Helper"
+                          Description="Runs the mihomo core for the SuperPuperVPN client."
+                          Type="ownProcess" Start="auto" Account="LocalSystem" ErrorControl="normal" Vital="yes" />
+          <ServiceControl Id="HelperControl" Name="superpupervpn-helper" Start="install" Stop="both" Remove="uninstall" Wait="yes" />
+        </Component>
+      </Directory>
+    </StandardDirectory>
+
+    <StandardDirectory Id="ProgramMenuFolder">
+      <Component Id="StartMenuShortcut" Guid="0E3C8B7A-6F4D-4E5A-8C2B-1D9F7A6E3B52">
+        <Shortcut Id="SuperPuperVPNShortcut" Name="SuperPuperVPN" Target="[INSTALLFOLDER]superpupervpn.exe" WorkingDirectory="INSTALLFOLDER" />
+        <RegistryValue Root="HKCU" Key="Software\SuperPuperVPN" Name="shortcut" Type="integer" Value="1" KeyPath="yes" />
+      </Component>
+    </StandardDirectory>
+  </Package>
+</Wix>

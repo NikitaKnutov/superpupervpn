@@ -1,0 +1,14 @@
+[Desktop Entry]
+Type=Application
+Name=SuperPuperVPN
+GenericName=VPN client
+GenericName[ru]=VPN-клиент
+Comment=VLESS/REALITY client
+Comment[ru]=Клиент VLESS/REALITY
+Exec=superpupervpn %u
+Icon=superpupervpn
+Terminal=false
+Categories=Network;
+Keywords=vpn;vless;reality;proxy;
+MimeType=x-scheme-handler/vless;x-scheme-handler/superpupervpn;
+StartupWMClass=superpupervpn

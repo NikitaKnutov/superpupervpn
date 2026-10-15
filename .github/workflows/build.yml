@@ -1,0 +1,103 @@
+name: build
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+
+jobs:
+  linux:
+    runs-on: ubuntu-latest
+    container: fedora:44
+    steps:
+      - uses: actions/checkout@v4
+      - name: Dependencies
+        run: dnf install -y cmake ninja-build gcc-c++ qt6-qtbase-devel qt6-qtdeclarative-devel openssl-devel libsecret-devel rpm-build systemd-rpm-macros rpmdevtools
+      - name: Sources
+        run: |
+          VERSION=$(sed -n 's/^project(superpupervpn VERSION \([0-9.]*\).*/\1/p' CMakeLists.txt)
+          mkdir -p ~/rpmbuild/SOURCES
+          tar --exclude=.git --transform "s,^\.,superpupervpn-$VERSION," -czf ~/rpmbuild/SOURCES/superpupervpn-$VERSION.tar.gz .
+          spectool -g -C ~/rpmbuild/SOURCES packaging/linux/superpupervpn.spec
+      - name: Build, test, package
+        run: rpmbuild -bb packaging/linux/superpupervpn.spec
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux
+          path: ~/rpmbuild/RPMS/x86_64/superpupervpn-[0-9]*.rpm
+
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: jurplel/install-qt-action@v4
+        with:
+          version: '6.8.3'
+          arch: win64_msvc2022_64
+      - uses: ilammy/msvc-dev-cmd@v1
+      - name: Version, OpenSSL, core
+        shell: pwsh
+        run: |
+          $version = (Select-String -Path CMakeLists.txt -Pattern '^project\(superpupervpn VERSION ([0-9.]+)').Matches[0].Groups[1].Value
+          "VERSION=$version" >> $env:GITHUB_ENV
+          $crypto = Get-ChildItem 'C:\Program Files\OpenSSL*' -Recurse -Filter libcrypto-3-x64.dll -ErrorAction SilentlyContinue | Select-Object -First 1
+          if (-not $crypto) {
+            choco install openssl --no-progress -y
+            $crypto = Get-ChildItem 'C:\Program Files\OpenSSL*' -Recurse -Filter libcrypto-3-x64.dll | Select-Object -First 1
+          }
+          "OPENSSL_DLL=$($crypto.FullName)" >> $env:GITHUB_ENV
+          "OPENSSL_ROOT=$((Get-Item $crypto.DirectoryName).Parent.FullName)" >> $env:GITHUB_ENV
+          $lock = @{}; Get-Content core.lock | Where-Object { $_ -match '^[A-Z_]+=' } | ForEach-Object { $k, $v = $_ -split '=', 2; $lock[$k] = $v }
+          $zip = $lock.MIHOMO_WINDOWS
+          Invoke-WebRequest "https://github.com/MetaCubeX/mihomo/releases/download/$($lock.MIHOMO_VERSION)/$zip" -OutFile $zip
+          if ((Get-FileHash $zip -Algorithm SHA256).Hash.ToLower() -ne $lock.MIHOMO_WINDOWS_SHA256) { throw "core archive hash mismatch" }
+          Expand-Archive $zip -DestinationPath core-x
+          $exe = Get-ChildItem core-x -Filter *.exe | Select-Object -First 1
+          New-Item -ItemType Directory deploy/core -Force | Out-Null
+          Copy-Item $exe.FullName deploy/core/mihomo.exe
+          "CORE_SHA256=$((Get-FileHash deploy/core/mihomo.exe -Algorithm SHA256).Hash.ToLower())" >> $env:GITHUB_ENV
+      - name: Build and test
+        shell: cmd
+        run: |
+          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DSUPERPUPERVPN_CORE_SHA256=%CORE_SHA256% "-DOPENSSL_ROOT_DIR=%OPENSSL_ROOT%" || exit /b 1
+          cmake --build build || exit /b 1
+          ctest --test-dir build --output-on-failure || exit /b 1
+      - name: Package
+        shell: pwsh
+        run: |
+          Copy-Item build/src/gui/superpupervpn.exe, build/src/helper/superpupervpn-helper.exe deploy/
+          windeployqt --release --qmldir src/gui/qml deploy/superpupervpn.exe
+          windeployqt --release deploy/superpupervpn-helper.exe
+          New-Item -ItemType Directory deploy/imageformats, deploy/iconengines -Force | Out-Null
+          Copy-Item "$env:QT_ROOT_DIR/bin/Qt6Svg.dll" deploy/
+          Copy-Item "$env:QT_ROOT_DIR/plugins/imageformats/qsvg.dll" deploy/imageformats/
+          Copy-Item "$env:QT_ROOT_DIR/plugins/iconengines/qsvgicon.dll" deploy/iconengines/
+          Copy-Item $env:OPENSSL_DLL deploy/
+          Get-ChildItem "$env:VCToolsRedistDir/x64/Microsoft.VC*.CRT/*.dll" | Copy-Item -Destination deploy/
+          Copy-Item licenses deploy/licenses -Recurse
+          dotnet tool install --global wix --version 5.0.2
+          wix build packaging/windows/superpupervpn.wxs -arch x64 -d Version=$env:VERSION -d Deploy=deploy -o "SuperPuperVPN-$env:VERSION-windows-x64.msi"
+          Compress-Archive -Path deploy/* -DestinationPath "SuperPuperVPN-$env:VERSION-windows-x64.zip"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows
+          path: |
+            SuperPuperVPN-*-windows-x64.msi
+            SuperPuperVPN-*-windows-x64.zip
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [linux, windows]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: out
+          merge-multiple: true
+      - name: Publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" out/* --repo "$GITHUB_REPOSITORY" --title "SuperPuperVPN $GITHUB_REF_NAME" --generate-notes

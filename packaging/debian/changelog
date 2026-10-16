@@ -1,3 +1,10 @@
+superpupervpn (0.1.5-1) unstable; urgency=medium
+
+  * A server that does not answer suggests trying another one
+  * Diagnostics warns about IP forwarding only in TUN mode
+
+ -- SuperPuperVPN <noreply@superpupervpn.invalid>  Fri, 16 Oct 2026 18:10:00 +0300
+
 superpupervpn (0.1.4-1) unstable; urgency=medium
 
   * First .deb build: Ubuntu 22.04+, Debian 12+, Mint 21+, with its own Qt 6.8

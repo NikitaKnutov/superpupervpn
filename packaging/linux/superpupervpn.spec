@@ -1,7 +1,7 @@
 %global mihomo_version v1.19.32
 
 Name:           superpupervpn
-Version:        0.1.4
+Version:        0.1.5
 Release:        1%{?dist}
 Summary:        SuperPuperVPN, a VLESS/REALITY desktop client
 License:        LicenseRef-Proprietary AND GPL-3.0-only AND OFL-1.1
@@ -74,6 +74,10 @@ fi
 %{_datadir}/icons/hicolor/scalable/apps/superpupervpn.svg
 
 %changelog
+* Fri Oct 16 2026 SuperPuperVPN <noreply@superpupervpn.invalid> - 0.1.5-1
+- A server that does not answer suggests trying another one
+- Diagnostics warns about IP forwarding only in TUN mode
+
 * Fri Oct 16 2026 SuperPuperVPN <noreply@superpupervpn.invalid> - 0.1.4-1
 - Tapping a server only selects it; «Проверить все» measures latency
 

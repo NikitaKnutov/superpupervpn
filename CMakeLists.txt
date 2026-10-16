@@ -1,12 +1,12 @@
 cmake_minimum_required(VERSION 3.21)
-project(superpupervpn VERSION 0.1.4 LANGUAGES CXX)
+project(superpupervpn VERSION 0.1.5 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 option(SUPERPUPERVPN_BUILD_GUI "Build the Qt Quick GUI" ON)
 option(SUPERPUPERVPN_BUNDLE_QT "Install the Qt it was built with into lib/superpupervpn, for distros whose Qt is too old" OFF)
-option(SUPERPUPERVPN_DEV"Developer build: env overrides for paths/socket, unpinned core allowed, screenshot hook. Never for packages" OFF)
+option(SUPERPUPERVPN_DEV "Developer build: env overrides for paths/socket, unpinned core allowed, screenshot hook. Never for packages" OFF)
 set(SUPERPUPERVPN_CORE_SHA256 "" CACHE STRING "SHA-256 of the pinned mihomo binary, baked into the helper (НФТ-БЕЗ-05)")
 set(SUPERPUPERVPN_GITHUB_REPO "NikitaKnutov/superpupervpn" CACHE STRING "owner/repo checked for new releases (ФТ-35)")
 

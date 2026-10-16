@@ -213,7 +213,7 @@ ColumnLayout {
             readonly property var m: parent && parent.model ? parent.model : ({})
             height: 68
             Accessible.name: m.name
-            onClicked: { const id = row.m.profileId; App.testProfile(id); App.selectProfile(id) }
+            onClicked: App.selectProfile(row.m.profileId)
             onPressAndHold: page.openProfile(m.profileId)
             background: Rectangle {
                 radius: Theme.radius

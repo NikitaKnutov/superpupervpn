@@ -12,7 +12,7 @@
 <p align="center">
   <a href="https://github.com/NikitaKnutov/superpupervpn/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/NikitaKnutov/superpupervpn?color=C6F046&labelColor=0B0D0F"></a>
   <a href="https://github.com/NikitaKnutov/superpupervpn/actions/workflows/build.yml"><img alt="Build" src="https://img.shields.io/github/actions/workflow/status/NikitaKnutov/superpupervpn/build.yml?labelColor=0B0D0F"></a>
-  <img alt="Platforms" src="https://img.shields.io/badge/platforms-Windows%2010%2F11%20%7C%20Fedora-C6F046?labelColor=0B0D0F">
+  <img alt="Platforms" src="https://img.shields.io/badge/platforms-Windows%2010%2F11%20%7C%20Fedora%20%7C%20Debian%20%7C%20Ubuntu-C6F046?labelColor=0B0D0F">
 </p>
 
 <p align="center">
@@ -45,8 +45,8 @@ SuperPuperVPN is the opposite:
   - **System proxy**: browsers and apps that respect the OS proxy go through the server.
   - **TUN**: all traffic of the computer goes through the server, including games and the terminal.
 - **All traffic through the tunnel**, DNS included (DoH through the connection, fake-IP in TUN), IPv6 never leaks.
-- **Server list** with search, sorting, pinning, real latency (`generate_204` through the server itself),
-  ping on tap and **country flags detected from the server IP** with an offline database.
+- **Server list** with search, sorting, pinning, real latency (`generate_204` through the server itself)
+  and **country flags detected from the server IP** with an offline database.
 - **Honest status**: "Connected" only after a real request went through the server.
 - **Auto-recovery**: the core is restarted if it crashes; the system proxy is restored after a crash or a power loss.
 - **Dark and light themes**, tray icon, autostart, connect on start, a log viewer with masked export.
@@ -64,6 +64,8 @@ Grab the latest build from **[Releases](https://github.com/NikitaKnutov/superpup
 3. Start **SuperPuperVPN** from the Start menu.
 
 The builds are not code-signed yet, so SmartScreen may warn you: choose *More info → Run anyway*.
+Smart App Control (Windows 11, *«Интеллектуальное управление приложениями»*) has no such button: while it is on,
+it blocks unsigned apps, and SuperPuperVPN cannot start until the builds are signed.
 A portable `.zip` is attached as well; in that case run `superpupervpn-helper.exe` as administrator yourself.
 
 > Windows support is new. If something does not work, please open an issue with the log export
@@ -86,6 +88,15 @@ On GNOME the tray icon needs the
 
 Uninstall: `sudo dnf remove superpupervpn`.
 
+### Debian 13 / Ubuntu 26.04 or newer (amd64)
+
+```bash
+sudo apt install ./superpupervpn_*_amd64.deb
+```
+
+Like the RPM, the package installs and starts the helper service. Ubuntu 24.04 is too old: its Qt 6.4 is below the
+required 6.8. Uninstall: `sudo apt remove superpupervpn`.
+
 Other distributions: build from source (see below).
 
 ## Quick start
@@ -96,7 +107,7 @@ The interface is in Russian; button names are given below as **«Русский�
 2. Open SuperPuperVPN and press **`Ctrl+V`** (or the **+** button) → **«Добавить»** (Add).
 3. Pick **«Системный прокси»** (System proxy) or **TUN** and press the big button.
 
-Tap a server in **«Серверы»** (Servers) to select it and measure its latency; **«Проверить все»** (Check all) tests every server.
+Tap a server in **«Серверы»** (Servers) to select it; **«Проверить все»** (Check all) measures the latency of every server.
 
 ## How it works
 
@@ -155,6 +166,8 @@ Packages:
 
 - **RPM**: put the source tarball and the core archive from `core.lock` into `~/rpmbuild/SOURCES`
   (`spectool -g packaging/linux/superpupervpn.spec`) and run `rpmbuild -bb packaging/linux/superpupervpn.spec`.
+- **DEB**: on Debian 13, `cp -r packaging/debian debian`, put the core archive from `core.lock` next to the sources
+  and run `dpkg-buildpackage -b -us -uc` (the `deb` job does exactly this).
 - **MSI / ZIP**: built by the `windows` job in [`.github/workflows/build.yml`](.github/workflows/build.yml).
 
 ### Developer mode
@@ -174,7 +187,7 @@ src/core     link parser, validation, subscriptions, core config generator, mask
 src/helper   privileged service: JSON-RPC server, core process manager, platform layer
 src/gui      Qt Quick app: storage, system proxy, tray, QML screens
 tests        unit tests (link vectors, config security checks, theme contrast, translations)
-packaging    systemd unit, polkit action, .desktop, RPM spec, WiX installer
+packaging    systemd unit, polkit action, .desktop, RPM spec, Debian packaging, WiX installer
 tools        make-geo.py: rebuilds assets/geo/country.bin from the DB-IP Lite CSV
 licenses     third-party license texts shipped with the packages
 ```

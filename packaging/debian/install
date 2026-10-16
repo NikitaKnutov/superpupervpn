@@ -1,0 +1,6 @@
+mihomo usr/libexec/superpupervpn/
+packaging/linux/superpupervpn-helper.service usr/lib/systemd/system/
+packaging/linux/org.superpupervpn.helper.policy usr/share/polkit-1/actions/
+packaging/linux/superpupervpn.desktop usr/share/applications/
+assets/icons/superpupervpn.svg usr/share/icons/hicolor/scalable/apps/
+licenses usr/share/doc/superpupervpn/

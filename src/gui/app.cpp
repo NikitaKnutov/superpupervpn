@@ -819,12 +819,6 @@ void App::testAll()
     testProfiles(m_storage->profiles);
 }
 
-void App::testProfile(const QString &id)
-{
-    if (const Profile *p = find(id))
-        testProfiles({*p});
-}
-
 void App::testProfiles(const QList<Profile> &profiles)
 {
     if (profiles.isEmpty())

@@ -111,7 +111,6 @@ public:
     Q_INVOKABLE void deleteProfile(const QString &id);
     Q_INVOKABLE void togglePin(const QString &id);
     Q_INVOKABLE void testAll();
-    Q_INVOKABLE void testProfile(const QString &id);
 
     Q_INVOKABLE void runDiagnostics();
     Q_INVOKABLE void startService(bool restart);

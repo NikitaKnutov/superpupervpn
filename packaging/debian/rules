@@ -5,8 +5,12 @@
 # The core archive named in core.lock must sit next to the sources (CI downloads it).
 override_dh_auto_configure:
 	. ./core.lock && echo "$$MIHOMO_LINUX_SHA256  $$MIHOMO_LINUX" | sha256sum -c && gzip -dc $$MIHOMO_LINUX > mihomo && chmod 0755 mihomo
-	dh_auto_configure -- -DSUPERPUPERVPN_CORE_SHA256=$$(sha256sum mihomo | cut -d' ' -f1)
+	dh_auto_configure -- -DSUPERPUPERVPN_BUNDLE_QT=ON -DSUPERPUPERVPN_CORE_SHA256=$$(sha256sum mihomo | cut -d' ' -f1)
 
 # Stripping the core would change its hash, and the helper would refuse to start it.
 override_dh_strip:
 	dh_strip --exclude=mihomo
+
+# The bundled Qt is private: resolve it inside the package, depend only on what it needs from the system.
+override_dh_shlibdeps:
+	dh_shlibdeps -l$(CURDIR)/debian/superpupervpn/usr/lib/superpupervpn/lib

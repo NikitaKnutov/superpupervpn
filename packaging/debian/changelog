@@ -1,6 +1,6 @@
 superpupervpn (0.1.4-1) unstable; urgency=medium
 
-  * First .deb build
+  * First .deb build: Ubuntu 22.04+, Debian 12+, Mint 21+, with its own Qt 6.8
   * Tapping a server only selects it; «Проверить все» measures latency
 
  -- SuperPuperVPN <noreply@superpupervpn.invalid>  Fri, 16 Oct 2026 16:30:00 +0300

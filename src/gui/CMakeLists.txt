@@ -44,3 +44,15 @@ qt_add_resources(superpupervpn assets
 target_compile_definitions(superpupervpn PRIVATE SUPERPUPERVPN_GITHUB_REPO="${SUPERPUPERVPN_GITHUB_REPO}")
 target_link_libraries(superpupervpn PRIVATE libcore Qt6::Quick Qt6::QuickControls2 Qt6::Widgets Qt6::Network OpenSSL::Crypto)
 install(TARGETS superpupervpn RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+
+if(SUPERPUPERVPN_BUNDLE_QT)
+    # Qt is relocatable: it finds plugins/ and qml/ next to the lib/ it was loaded from. This is
+    # qt_generate_deploy_qml_app_script minus its qt.conf, which in /usr/bin would redirect every Qt app there.
+    qt6_generate_deploy_script(TARGET superpupervpn OUTPUT_SCRIPT deploy_script CONTENT "
+set(QT_DEPLOY_LIB_DIR lib/superpupervpn/lib)
+set(QT_DEPLOY_PLUGINS_DIR lib/superpupervpn/plugins)
+set(QT_DEPLOY_QML_DIR lib/superpupervpn/qml)
+qt6_deploy_qml_imports(TARGET superpupervpn PLUGINS_FOUND plugins_found)
+qt6_deploy_runtime_dependencies(EXECUTABLE $<TARGET_FILE:superpupervpn> ADDITIONAL_MODULES \${plugins_found} NO_TRANSLATIONS)")
+    install(SCRIPT ${deploy_script})
+endif()

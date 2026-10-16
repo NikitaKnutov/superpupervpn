@@ -88,14 +88,15 @@ On GNOME the tray icon needs the
 
 Uninstall: `sudo dnf remove superpupervpn`.
 
-### Debian 13 / Ubuntu 26.04 or newer (amd64)
+### Ubuntu 22.04, Debian 12, Linux Mint 21 or newer (amd64)
 
 ```bash
 sudo apt install ./superpupervpn_*_amd64.deb
 ```
 
-Like the RPM, the package installs and starts the helper service. Ubuntu 24.04 is too old: its Qt 6.4 is below the
-required 6.8. Uninstall: `sudo apt remove superpupervpn`.
+These distros ship Qt older than the 6.8 the app needs, so the package carries its own Qt in
+`/usr/lib/superpupervpn`; the system Qt is not touched. Like the RPM, it installs and starts the helper service.
+Uninstall: `sudo apt remove superpupervpn`.
 
 Other distributions: build from source (see below).
 
@@ -166,8 +167,10 @@ Packages:
 
 - **RPM**: put the source tarball and the core archive from `core.lock` into `~/rpmbuild/SOURCES`
   (`spectool -g packaging/linux/superpupervpn.spec`) and run `rpmbuild -bb packaging/linux/superpupervpn.spec`.
-- **DEB**: on Debian 13, `cp -r packaging/debian debian`, put the core archive from `core.lock` next to the sources
-  and run `dpkg-buildpackage -b -us -uc` (the `deb` job does exactly this).
+- **DEB**: on Ubuntu 22.04, install Qt 6.8 with [aqtinstall](https://github.com/miurahr/aqtinstall) and point
+  `CMAKE_PREFIX_PATH` at it, `cp -r packaging/debian debian`, put the core archive from `core.lock` next to the
+  sources and run `dpkg-buildpackage -b -us -uc` (the `deb` job does exactly this). `-DSUPERPUPERVPN_BUNDLE_QT=ON`
+  is what copies that Qt into the package.
 - **MSI / ZIP**: built by the `windows` job in [`.github/workflows/build.yml`](.github/workflows/build.yml).
 
 ### Developer mode

@@ -5,7 +5,8 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 option(SUPERPUPERVPN_BUILD_GUI "Build the Qt Quick GUI" ON)
-option(SUPERPUPERVPN_DEV "Developer build: env overrides for paths/socket, unpinned core allowed, screenshot hook. Never for packages" OFF)
+option(SUPERPUPERVPN_BUNDLE_QT "Install the Qt it was built with into lib/superpupervpn, for distros whose Qt is too old" OFF)
+option(SUPERPUPERVPN_DEV"Developer build: env overrides for paths/socket, unpinned core allowed, screenshot hook. Never for packages" OFF)
 set(SUPERPUPERVPN_CORE_SHA256 "" CACHE STRING "SHA-256 of the pinned mihomo binary, baked into the helper (НФТ-БЕЗ-05)")
 set(SUPERPUPERVPN_GITHUB_REPO "NikitaKnutov/superpupervpn" CACHE STRING "owner/repo checked for new releases (ФТ-35)")
 
@@ -15,6 +16,12 @@ if(SUPERPUPERVPN_BUILD_GUI)
 endif()
 if(UNIX AND NOT APPLE)
     list(APPEND RL_QT_COMPONENTS DBus)
+endif()
+if(SUPERPUPERVPN_BUNDLE_QT)
+    # A private dir, so the bundled Qt never replaces or clashes with the system one.
+    set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_PREFIX}/lib/superpupervpn/lib)
+    # plugins/ and qml/ keep Qt's layout next to lib/, so their shipped RUNPATHs stay right (read by find_package).
+    set(QT_DEPLOY_FORCE_ADJUST_RPATHS OFF)
 endif()
 find_package(Qt6 6.8 REQUIRED COMPONENTS ${RL_QT_COMPONENTS})
 include(GNUInstallDirs)

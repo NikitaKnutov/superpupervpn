@@ -376,7 +376,8 @@ void Helper::onCoreReady()
             return;
         const QJsonObject o = QJsonDocument::fromJson(r->readAll()).object();
         if (r->error() != QNetworkReply::NoError || !o.contains(u"delay"_s)) {
-            const QString why = u"сервер не отвечает (%1)"_s.arg(o.value(u"message"_s).toString(r->errorString()));
+            const QString why = u"сервер не отвечает (%1). Попробуйте другой: «Серверы» → «Проверить все»"_s
+                                    .arg(o.value(u"message"_s).toString(r->errorString()));
             log(u"helper"_s, u"warning"_s, why);
             m_core->stop();
             onCoreFailed(m_attempts == 0, why);

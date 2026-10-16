@@ -295,7 +295,7 @@ ApplicationWindow {
                 }
             }
             Label {
-                visible: !!diagDialog.d.ipForwarding || !!diagDialog.d.hotspot
+                visible: App.settings.mode === "tun" && (!!diagDialog.d.ipForwarding || !!diagDialog.d.hotspot)
                 Layout.fillWidth: true
                 wrapMode: Text.Wrap
                 color: Theme.error

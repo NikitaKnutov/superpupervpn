@@ -1,0 +1,19 @@
+name: Предложить идею / Feature request
+description: Идея, которая сделает клиент лучше
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: Идея / Idea
+      description: Что должно получиться и какую задачу это решает? Опишите сценарий использования.
+      placeholder: Хочу, чтобы приложение могло ... потому что ...
+    validations:
+      required: true
+  - type: textarea
+    id: workaround
+    attributes:
+      label: Как решаете сейчас / Current workaround
+      description: Есть ли способ получить нужное сейчас (в этом или другом клиенте)?
+    validations:
+      required: false

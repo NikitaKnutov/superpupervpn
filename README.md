@@ -195,6 +195,22 @@ tools        make-geo.py: rebuilds assets/geo/country.bin from the DB-IP Lite CS
 licenses     third-party license texts shipped with the packages
 ```
 
+## Support the project
+
+SuperPuperVPN is a free, non-commercial client built by one person. No built-in servers, no ads,
+no telemetry — donations are what keeps the development going.
+
+**USDT (TRC-20)** — network fee is a few cents:
+
+```
+TK8VdDvtU7Mq5b7X59SfpdURfpZR9etFmu
+```
+
+<img src="assets/donate/usdt-trc20-qr.svg" width="160" alt="USDT (TRC-20) donation QR code">
+
+Донат — это поддержка разработки клиента; серверы и подписки в него не входят.
+Donations fund client development only; VPN servers and subscriptions are not included.
+
 ## License
 
 SuperPuperVPN itself: © Nikita Knutov, all rights reserved.

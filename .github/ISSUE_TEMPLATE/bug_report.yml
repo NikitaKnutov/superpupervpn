@@ -1,0 +1,69 @@
+name: Сообщить об ошибке / Bug report
+description: Что-то не работает в SuperPuperVPN
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Спасибо, что помогаете сделать SuperPuperVPN лучше!
+        Чем подробнее отчёт, тем быстрее будет исправление.
+  - type: input
+    id: version
+    attributes:
+      label: Версия / Version
+      description: Номер версии из «Настройки» → «О программе»
+      placeholder: например, 0.4.2
+    validations:
+      required: true
+  - type: dropdown
+    id: os
+    attributes:
+      label: Операционная система / OS
+      options:
+        - Windows 11
+        - Windows 10
+        - Fedora
+        - Ubuntu
+        - Debian
+        - Linux Mint
+        - Другая (укажите в описании) / Other
+    validations:
+      required: true
+  - type: dropdown
+    id: mode
+    attributes:
+      label: Режим / Mode
+      options:
+        - Системный прокси / System proxy
+        - TUN
+        - Не относится к подключению / Not connection-related
+    validations:
+      required: false
+  - type: textarea
+    id: what
+    attributes:
+      label: Что произошло / What happened
+      description: Что вы делали, что ожидали и что получилось. Шаги для повторения.
+      placeholder: |
+        1. Открыл приложение
+        2. Вставил ссылку vless://...
+        3. Нажал подключиться, получил ошибку ...
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Логи / Logs
+      description: |
+        В приложении: «Логи» → «Экспорт» — лог экспортируется с замаскированными
+        адресами серверов и ключами. Приложите файл или вставьте содержимое сюда.
+      render: text
+    validations:
+      required: false
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Перед отправкой / Before submitting
+      options:
+        - label: Я проверил таблицу Troubleshooting в README — моей проблемы там нет
+        - label: Логи взяты из кнопки «Экспорт» (личные данные в них замаскированы)

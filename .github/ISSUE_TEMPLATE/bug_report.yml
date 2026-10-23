@@ -1,24 +1,24 @@
-name: Сообщить об ошибке / Bug report
-description: Что-то не работает в SuperPuperVPN
+name: Bug report
+description: Something does not work in SuperPuperVPN
 labels: ["bug"]
 body:
   - type: markdown
     attributes:
       value: |
-        Спасибо, что помогаете сделать SuperPuperVPN лучше!
-        Чем подробнее отчёт, тем быстрее будет исправление.
+        Thanks for helping make SuperPuperVPN better!
+        The more detailed the report, the faster the fix.
   - type: input
     id: version
     attributes:
-      label: Версия / Version
-      description: Номер версии из «Настройки» → «О программе»
-      placeholder: например, 0.4.2
+      label: Version
+      description: The version number from Settings → About («Настройки» → «О программе»)
+      placeholder: e.g. 0.4.2
     validations:
       required: true
   - type: dropdown
     id: os
     attributes:
-      label: Операционная система / OS
+      label: Operating system
       options:
         - Windows 11
         - Windows 10
@@ -26,44 +26,44 @@ body:
         - Ubuntu
         - Debian
         - Linux Mint
-        - Другая (укажите в описании) / Other
+        - Other (please specify in the description)
     validations:
       required: true
   - type: dropdown
     id: mode
     attributes:
-      label: Режим / Mode
+      label: Mode
       options:
-        - Системный прокси / System proxy
+        - System proxy
         - TUN
-        - Не относится к подключению / Not connection-related
+        - Not connection-related
     validations:
       required: false
   - type: textarea
     id: what
     attributes:
-      label: Что произошло / What happened
-      description: Что вы делали, что ожидали и что получилось. Шаги для повторения.
+      label: What happened
+      description: What you did, what you expected and what you got. Steps to reproduce.
       placeholder: |
-        1. Открыл приложение
-        2. Вставил ссылку vless://...
-        3. Нажал подключиться, получил ошибку ...
+        1. Opened the app
+        2. Pasted a vless://... link
+        3. Pressed connect and got the error ...
     validations:
       required: true
   - type: textarea
     id: logs
     attributes:
-      label: Логи / Logs
+      label: Logs
       description: |
-        В приложении: «Логи» → «Экспорт» — лог экспортируется с замаскированными
-        адресами серверов и ключами. Приложите файл или вставьте содержимое сюда.
+        In the app: Logs → Export («Логи» → «Экспорт»). The exported log has server addresses
+        and keys masked. Attach the file or paste its contents here.
       render: text
     validations:
       required: false
   - type: checkboxes
     id: checks
     attributes:
-      label: Перед отправкой / Before submitting
+      label: Before submitting
       options:
-        - label: Я проверил таблицу Troubleshooting в README — моей проблемы там нет
-        - label: Логи взяты из кнопки «Экспорт» (личные данные в них замаскированы)
+        - label: I checked the Troubleshooting table in the README and my problem is not there
+        - label: The logs come from the Export button (personal data in them is masked)

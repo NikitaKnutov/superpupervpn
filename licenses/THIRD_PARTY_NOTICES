@@ -1,25 +1,25 @@
-SuperPuperVPN — все права защищены. Сторонние компоненты, входящие в сборки:
+SuperPuperVPN — GPL-3.0-or-later (text: GPL-3.0.txt, © Nikita Knutov). Third-party components included in the builds:
 
 Qt 6 (Qt Base, Qt Declarative, Qt Quick Controls, Qt Network, Qt SVG)
   LGPL-3.0 / GPL-3.0 — https://www.qt.io/licensing
-  Исходные тексты: https://download.qt.io/official_releases/qt/
+  Source code: https://download.qt.io/official_releases/qt/
 
-mihomo (ядро, отдельный процесс; закреплённая версия, см. core.lock)
-  GPL-3.0 (текст: GPL-3.0.txt) — https://github.com/MetaCubeX/mihomo
-  Go-модули ядра перечислены в go.mod выпуска; их лицензии — в репозитории mihomo.
+mihomo (core, separate process; pinned version, see core.lock)
+  GPL-3.0 (text: GPL-3.0.txt) — https://github.com/MetaCubeX/mihomo
+  The core's Go modules are listed in the release's go.mod; their licenses are in the mihomo repository.
 
-Wintun (встроен в mihomo.exe через sing-tun, только Windows)
+Wintun (embedded in mihomo.exe via sing-tun, Windows only)
   Prebuilt Binaries License — https://www.wintun.net/
 
-OpenSSL 3 (libcrypto: AES-256-GCM для profiles.enc)
+OpenSSL 3 (libcrypto: AES-256-GCM for profiles.enc)
   Apache-2.0 — https://www.openssl.org/source/license.html
 
-libsecret (только Linux)
+libsecret (Linux only)
   LGPL-2.1-or-later — https://gitlab.gnome.org/GNOME/libsecret
 
-IP Geolocation by DB-IP (страна сервера по IP-адресу, база IP to Country Lite)
+IP Geolocation by DB-IP (server country by IP address, IP to Country Lite database)
   CC BY 4.0 — https://db-ip.com
 
-Inter (шрифт интерфейса)
-  SIL Open Font License 1.1 (текст: OFL-1.1.txt) — https://github.com/rsms/inter
+Inter (UI font)
+  SIL Open Font License 1.1 (text: OFL-1.1.txt) — https://github.com/rsms/inter
   Copyright (c) 2016 The Inter Project Authors

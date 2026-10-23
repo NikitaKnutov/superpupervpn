@@ -13,6 +13,7 @@
   <a href="https://github.com/NikitaKnutov/superpupervpn/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/NikitaKnutov/superpupervpn?color=C6F046&labelColor=0B0D0F"></a>
   <a href="https://github.com/NikitaKnutov/superpupervpn/actions/workflows/build.yml"><img alt="Build" src="https://img.shields.io/github/actions/workflow/status/NikitaKnutov/superpupervpn/build.yml?labelColor=0B0D0F"></a>
   <img alt="Platforms" src="https://img.shields.io/badge/platforms-Windows%2010%2F11%20%7C%20Fedora%20%7C%20Debian%20%7C%20Ubuntu-C6F046?labelColor=0B0D0F">
+  <a href="LICENSE"><img alt="License: GPL-3.0" src="https://img.shields.io/github/license/NikitaKnutov/superpupervpn?color=C6F046&labelColor=0B0D0F"></a>
 </p>
 
 <p align="center">
@@ -64,12 +65,12 @@ Grab the latest build from **[Releases](https://github.com/NikitaKnutov/superpup
 3. Start **SuperPuperVPN** from the Start menu.
 
 The builds are not code-signed yet, so SmartScreen may warn you: choose *More info → Run anyway*.
-Smart App Control (Windows 11, *«Интеллектуальное управление приложениями»*) has no such button: while it is on,
-it blocks unsigned apps, and SuperPuperVPN cannot start until the builds are signed.
+Smart App Control (Windows 11) has no such button: while it is on, it blocks unsigned apps, and SuperPuperVPN
+cannot start until the builds are signed.
 A portable `.zip` is attached as well; in that case run `superpupervpn-helper.exe` as administrator yourself.
 
 > Windows support is new. If something does not work, please open an issue with the log export
-> (*«Логи» → «Экспорт»*).
+> (*Logs → Export*, «Логи» → «Экспорт» in the app).
 
 ### Fedora Linux 42 or newer (x86_64)
 
@@ -102,22 +103,34 @@ Other distributions: build from source (see below).
 
 ## Quick start
 
-The interface is in Russian; button names are given below as **«Русский»** (English).
+The interface is in Russian for now (an English translation is very welcome, see [Contributing](#contributing)),
+so button names are given below as **English** («Русский»).
 
 1. Copy your `vless://...` link (or a subscription URL).
-2. Open SuperPuperVPN and press **`Ctrl+V`** (or the **+** button) → **«Добавить»** (Add).
-3. Pick **«Системный прокси»** (System proxy) or **TUN** and press the big button.
+2. Open SuperPuperVPN and press **`Ctrl+V`** (or the **+** button) → **Add** («Добавить»).
+3. Pick **System proxy** («Системный прокси») or **TUN** and press the big button.
 
-Tap a server in **«Серверы»** (Servers) to select it; **«Проверить все»** (Check all) measures the latency of every server.
+Tap a server in **Servers** («Серверы») to select it; **Check all** («Проверить все») measures the latency of every server.
 
 ## How it works
 
 ```mermaid
 flowchart LR
-    GUI["SuperPuperVPN<br/>Qt Quick GUI<br/>(your user)"] -- "JSON-RPC over<br/>unix socket / named pipe<br/>(polkit / ACL)" --> Helper["superpupervpn-helper<br/>(root / SYSTEM)"]
-    Helper -- "config via stdin<br/>REST over a private socket" --> Core["mihomo core<br/>(pinned version)"]
-    Core -- "VLESS + REALITY" --> Server[("Your server")]
+    subgraph PC["Your computer"]
+        Apps["Browsers, apps,<br/>games, terminal"]
+        GUI["SuperPuperVPN GUI<br/>Qt Quick, runs as you"]
+        Helper["superpupervpn-helper<br/>root / SYSTEM service"]
+        Core["mihomo core<br/>pinned, SHA-256 checked"]
+        GUI -- "JSON-RPC over unix socket / named pipe<br/>checked by polkit / ACL" --> Helper
+        Helper -- "config via stdin<br/>REST over a private socket" --> Core
+        Apps -- "System proxy: 127.0.0.1<br/>TUN: all traffic" --> Core
+    end
+    Core == "VLESS + REALITY<br/>DNS inside the tunnel" ==> Server[("Your server<br/>3x-ui, Marzban,<br/>Remnawave, Xray")]
+    Server --> Net(("Internet"))
 ```
+
+The GUI has no privileges and never talks to the core directly; the core only ever runs a config that the
+helper generated and validated itself.
 
 - The **GUI** never touches the core. It stores profiles in `profiles.enc` (AES-256-GCM, key in the OS keyring:
   libsecret on Linux, DPAPI on Windows) and sends a structured profile to the helper.
@@ -142,9 +155,9 @@ reported as unsupported.
 
 | Symptom | What to do |
 |---|---|
-| «Служба не запущена» (service is not running) | *«Настройки» → «Служба» → «Запустить»*, or `sudo systemctl start superpupervpn-helper` |
-| «сервер не отвечает» (server does not respond) | The server refused the handshake or is unreachable. Commercial subscriptions often have dead nodes: **«Проверить все»** in «Серверы» shows which ones answer. For your own server, check the link with another client or get a fresh one from your panel. |
-| TUN connects but nothing loads | Another VPN is running and takes the traffic. The app lists it before connecting and in *«Диагностика»*; press *«Выключить другие VPN»* (turn off other VPNs), or use proxy mode, which works next to other VPNs. |
+| "Service is not running" («Служба не запущена») | *Settings → Service → Start* («Настройки» → «Служба» → «Запустить»), or `sudo systemctl start superpupervpn-helper` |
+| "Server does not respond" («сервер не отвечает») | The server refused the handshake or is unreachable. Commercial subscriptions often have dead nodes: **Check all** («Проверить все») in **Servers** shows which ones answer. For your own server, check the link with another client or get a fresh one from your panel. |
+| TUN connects but nothing loads | Another VPN is running and takes the traffic. The app lists it before connecting and in *Diagnostics* («Диагностика»); press *Turn off other VPNs* («Выключить другие VPN»), or use proxy mode, which works next to other VPNs. |
 | No tray icon on GNOME | Install and enable the AppIndicator extension. |
 | Proxy mode does not work in a terminal | CLI tools ignore the desktop proxy setting; use TUN mode. |
 
@@ -195,12 +208,23 @@ tools        make-geo.py: rebuilds assets/geo/country.bin from the DB-IP Lite CS
 licenses     third-party license texts shipped with the packages
 ```
 
+## Contributing
+
+Pull requests are welcome. The most useful things right now:
+
+- **An English UI.** The QML screens already wrap their strings in `qsTr()`; some messages in the C++ code
+  still need to be marked for translation.
+- **Testing on other distributions** and on Windows, with a log export attached to the issue.
+
+Run `ctest --test-dir build` before sending a PR. By contributing you agree that your code is released under
+the project's license (GPL-3.0-or-later).
+
 ## Feedback
 
-- **Баги и идеи**: [Issues](https://github.com/NikitaKnutov/superpupervpn/issues) — шаблоны сами спросят версию,
-  ОС и экспортированный лог («Логи» → «Экспорт», личные данные маскируются).
-- **Вопросы и обсуждения**: [Discussions](https://github.com/NikitaKnutov/superpupervpn/discussions).
-- **Уязвимости**: только приватно, см. [SECURITY.md](SECURITY.md).
+- **Bugs and ideas**: [Issues](https://github.com/NikitaKnutov/superpupervpn/issues). The templates ask for the
+  version, the OS and an exported log (*Logs → Export*, «Логи» → «Экспорт»; personal data is masked).
+- **Questions and discussions**: [Discussions](https://github.com/NikitaKnutov/superpupervpn/discussions).
+- **Vulnerabilities**: privately only, see [SECURITY.md](SECURITY.md).
 
 ## Support the project
 
@@ -215,12 +239,13 @@ TK8VdDvtU7Mq5b7X59SfpdURfpZR9etFmu
 
 <img src="assets/donate/usdt-trc20-qr.svg" width="160" alt="USDT (TRC-20) donation QR code">
 
-Донат — это поддержка разработки клиента; серверы и подписки в него не входят.
 Donations fund client development only; VPN servers and subscriptions are not included.
 
 ## License
 
-SuperPuperVPN itself: © Nikita Knutov, all rights reserved.
+SuperPuperVPN is free software: © Nikita Knutov, licensed under the
+[GNU General Public License v3.0 or later](LICENSE). You may use, study, share and modify it; if you distribute
+a modified version, it has to stay open source under the same license.
 
 It ships third-party components under their own licenses, see [`licenses/`](licenses):
 [mihomo](https://github.com/MetaCubeX/mihomo) (GPL-3.0, separate process), Qt (LGPL-3.0), OpenSSL (Apache-2.0),

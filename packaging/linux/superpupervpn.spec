@@ -4,7 +4,7 @@ Name:           superpupervpn
 Version:        0.1.5
 Release:        1%{?dist}
 Summary:        SuperPuperVPN, a VLESS/REALITY desktop client
-License:        LicenseRef-Proprietary AND GPL-3.0-only AND OFL-1.1
+License:        GPL-3.0-or-later AND GPL-3.0-only AND OFL-1.1
 URL:            https://github.com/NikitaKnutov/superpupervpn
 Source0:        %{name}-%{version}.tar.gz
 Source1:        https://github.com/MetaCubeX/mihomo/releases/download/%{mihomo_version}/mihomo-linux-amd64-compatible-%{mihomo_version}.gz
@@ -79,7 +79,7 @@ fi
 - Diagnostics warns about IP forwarding only in TUN mode
 
 * Fri Oct 16 2026 SuperPuperVPN <noreply@superpupervpn.invalid> - 0.1.4-1
-- Tapping a server only selects it; «Проверить все» measures latency
+- Tapping a server only selects it; Check all («Проверить все») measures latency
 
 * Thu Oct 15 2026 SuperPuperVPN <noreply@superpupervpn.invalid> - 0.1.3-1
 - Proxy mode and ping reach the server past other VPNs

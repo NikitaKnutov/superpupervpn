@@ -1,19 +1,19 @@
-name: Предложить идею / Feature request
-description: Идея, которая сделает клиент лучше
+name: Feature request
+description: An idea that would make the client better
 labels: ["enhancement"]
 body:
   - type: textarea
     id: idea
     attributes:
-      label: Идея / Idea
-      description: Что должно получиться и какую задачу это решает? Опишите сценарий использования.
-      placeholder: Хочу, чтобы приложение могло ... потому что ...
+      label: Idea
+      description: What should the app do and what problem does it solve? Describe how you would use it.
+      placeholder: I want the app to be able to ... because ...
     validations:
       required: true
   - type: textarea
     id: workaround
     attributes:
-      label: Как решаете сейчас / Current workaround
-      description: Есть ли способ получить нужное сейчас (в этом или другом клиенте)?
+      label: Current workaround
+      description: Is there a way to get this today, in this or another client?
     validations:
       required: false

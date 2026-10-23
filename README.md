@@ -195,6 +195,13 @@ tools        make-geo.py: rebuilds assets/geo/country.bin from the DB-IP Lite CS
 licenses     third-party license texts shipped with the packages
 ```
 
+## Feedback
+
+- **Баги и идеи**: [Issues](https://github.com/NikitaKnutov/superpupervpn/issues) — шаблоны сами спросят версию,
+  ОС и экспортированный лог («Логи» → «Экспорт», личные данные маскируются).
+- **Вопросы и обсуждения**: [Discussions](https://github.com/NikitaKnutov/superpupervpn/discussions).
+- **Уязвимости**: только приватно, см. [SECURITY.md](SECURITY.md).
+
 ## Support the project
 
 SuperPuperVPN is a free, non-commercial client built by one person. No built-in servers, no ads,

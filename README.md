@@ -237,8 +237,6 @@ no telemetry — donations are what keeps the development going.
 TK8VdDvtU7Mq5b7X59SfpdURfpZR9etFmu
 ```
 
-<img src="assets/donate/usdt-trc20-qr.svg" width="160" alt="USDT (TRC-20) donation QR code">
-
 Donations fund client development only; VPN servers and subscriptions are not included.
 
 ## License

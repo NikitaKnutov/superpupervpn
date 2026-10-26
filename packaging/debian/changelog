@@ -1,3 +1,10 @@
+superpupervpn (0.2.0-1) unstable; urgency=medium
+
+  * English interface by default; Russian in Settings -> Language
+  * Licensed under GPL-3.0-or-later
+
+ -- SuperPuperVPN <noreply@superpupervpn.invalid>  Mon, 26 Oct 2026 12:00:00 +0300
+
 superpupervpn (0.1.5-1) unstable; urgency=medium
 
   * A server that does not answer suggests trying another one

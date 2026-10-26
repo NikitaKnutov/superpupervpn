@@ -38,7 +38,7 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 a { color: inherit; }
-img { max-width: 100%; display: block; }
+img { max-width: 100%; height: auto; display: block; }
 code, pre { font-family: ui-monospace, "JetBrains Mono", "Cascadia Code", Consolas, monospace; font-size: 0.9em; }
 .wrap { max-width: var(--max); margin: 0 auto; padding: 0 20px; }
 .skip { position: absolute; left: -999px; }
@@ -73,13 +73,13 @@ h1 em { font-style: normal; color: var(--accent-ink); }
 .cta { display: flex; flex-wrap: wrap; gap: 12px; }
 .meta { margin-top: 16px; color: var(--muted); font-size: 14px; }
 .shots { position: relative; display: flex; justify-content: center; gap: 0; }
-.shots img { width: 46%; border-radius: 24px; border: 1px solid var(--border); box-shadow: 0 30px 60px -20px rgb(0 0 0 / 0.55); }
-.shots img:first-child { transform: rotate(-4deg) translate(14%, 6%); }
-.shots img:last-child { transform: rotate(4deg) translate(-14%, -2%); z-index: 1; }
+.shots img { width: 52%; border-radius: 24px; border: 1px solid var(--border); box-shadow: 0 30px 60px -20px rgb(0 0 0 / 0.55); }
+.shots img:first-child { transform: rotate(-4deg) translate(8%, 6%); }
+.shots img:last-child { transform: rotate(4deg) translate(-8%, -2%); z-index: 1; }
 @media (max-width: 880px) {
   .hero { grid-template-columns: 1fr; padding-top: 48px; gap: 40px; }
   .hero > * { min-width: 0; }
-  .shots img { width: 48%; }
+  .shots img { width: 58%; }
 }
 
 /* sections */

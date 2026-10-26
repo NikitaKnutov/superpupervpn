@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SuperPuperVPN — VLESS + REALITY клиент в одну кнопку для Windows и Linux</title>
+<meta name="description" content="Бесплатный клиент с открытым кодом для своих серверов VLESS + REALITY. Вставьте ссылку vless:// и нажмите одну кнопку. Windows 10/11, Fedora, Ubuntu, Debian. Без телеметрии.">
+<meta name="keywords" content="VLESS клиент, REALITY клиент, клиент Xray, клиент 3x-ui, Marzban, Remnawave, mihomo GUI, VPN клиент Linux, VPN клиент Windows">
+<link rel="canonical" href="https://nikitaknutov.github.io/superpupervpn/ru/">
+<link rel="icon" href="../logo.svg" type="image/svg+xml">
+<meta name="theme-color" content="#0B0D0F">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="ru_RU">
+<meta property="og:title" content="SuperPuperVPN — одна кнопка, ваши серверы VLESS + REALITY">
+<meta property="og:description" content="Бесплатный клиент с открытым кодом для Windows и Linux. Вставьте ссылку vless:// и нажмите одну кнопку.">
+<meta property="og:url" content="https://nikitaknutov.github.io/superpupervpn/ru/">
+<meta property="og:image" content="https://nikitaknutov.github.io/superpupervpn/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="alternate" hreflang="en" href="https://nikitaknutov.github.io/superpupervpn/">
+<link rel="alternate" hreflang="ru" href="https://nikitaknutov.github.io/superpupervpn/ru/">
+<link rel="alternate" hreflang="x-default" href="https://nikitaknutov.github.io/superpupervpn/">
+<link rel="stylesheet" href="../site.css">
+</head>
+<body>
+<a class="skip" href="#main">К содержимому</a>
+
+<header>
+  <div class="wrap">
+    <nav aria-label="Главное меню">
+      <a class="brand" href="#top"><img src="../logo.svg" alt="" width="32" height="32">SuperPuperVPN</a>
+      <div class="links">
+        <a href="#features">Возможности</a>
+        <a href="#how">Как устроен</a>
+        <a href="#install">Установка</a>
+        <a class="gh" href="https://github.com/NikitaKnutov/superpupervpn">GitHub</a>
+      </div>
+      <span class="lang"><a href="../" data-lang="en" hreflang="en" lang="en">EN</a><a href="./" aria-current="page" data-lang="ru" hreflang="ru">RU</a></span>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+  <div class="wrap hero" id="top">
+    <div>
+      <span class="eyebrow"><b>Свободное ПО</b> · GPL-3.0 · <span data-version>последний релиз</span></span>
+      <h1>Одна кнопка.<br><em>Ваши</em> серверы VLESS&nbsp;+&nbsp;REALITY.</h1>
+      <p class="lead">Простой клиент для Windows и Linux, который за секунды превращает ссылку <code>vless://</code>
+        в работающее подключение. Вставили ссылку, нажали кнопку — готово.</p>
+      <div class="cta">
+        <a class="btn primary" id="download" href="https://github.com/NikitaKnutov/superpupervpn/releases/latest">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v12m0 0-5-5m5 5 5-5M5 20h14"/></svg>
+          <span id="download-label">Скачать</span>
+        </a>
+        <a class="btn ghost" href="https://github.com/NikitaKnutov/superpupervpn">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-3.16 19.49c.5.09.68-.22.68-.48v-1.7c-2.78.6-3.37-1.34-3.37-1.34-.45-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.9 1.52 2.34 1.08 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.94 0-1.09.39-1.98 1.03-2.68-.1-.25-.45-1.27.1-2.65 0 0 .84-.27 2.75 1.02a9.6 9.6 0 0 1 5 0c1.91-1.29 2.75-1.02 2.75-1.02.55 1.38.2 2.4.1 2.65.64.7 1.03 1.59 1.03 2.68 0 3.84-2.34 4.68-4.57 4.93.36.31.68.92.68 1.85v2.75c0 .27.18.58.69.48A10 10 0 0 0 12 2Z"/></svg>
+          Звезда на GitHub
+        </a>
+      </div>
+      <p class="meta">Windows 10 / 11 · Fedora 42+ · Ubuntu 22.04+ · Debian 12+ · Linux Mint 21+ · русский и английский</p>
+    </div>
+    <div class="shots">
+      <img src="../screenshots/ru/servers-dark.png" width="420" height="760" alt="Список серверов с флагами стран и задержкой">
+      <img src="../screenshots/ru/home-dark.png" width="420" height="760" alt="Главный экран: подключено, таймер и большая кнопка">
+    </div>
+  </div>
+
+  <section id="features">
+    <div class="wrap">
+      <h2>Для тех, кому нужно, чтобы просто работало</h2>
+      <p class="sub">Большинство VLESS-клиентов ждут, что вы знаете, что такое <code>spx</code>, <code>sid</code> и <code>fp</code>.
+        SuperPuperVPN — нет. Он сделан для своих серверов на 3x-ui, Marzban, Remnawave или чистом Xray и для друзей,
+        с которыми вы ими делитесь.</p>
+      <div class="grid">
+        <div class="card">
+          <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="3" width="8" height="4" rx="1"/><path d="M8 5H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/></svg></div>
+          <h3>Вставил и подключился</h3>
+          <p>Нажмите <kbd>Ctrl+V</kbd>: одна ссылка, несколько, base64 или подписка с трафиком и сроком действия.</p>
+        </div>
+        <div class="card">
+          <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg></div>
+          <h3>Прокси или весь трафик</h3>
+          <p>Системный прокси для браузеров или TUN для всех программ на компьютере, включая игры и терминал.</p>
+        </div>
+        <div class="card">
+          <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6l-8-3Z"/><path d="m9 12 2 2 4-4"/></svg></div>
+          <h3>Без утечек</h3>
+          <p>DNS тоже идёт через туннель, IPv6 не утекает, а системный прокси восстанавливается после сбоя.</p>
+        </div>
+        <div class="card">
+          <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h2V14H4zM10 20h2V9h-2zM16 20h2V4h-2z"/></svg></div>
+          <h3>Настоящий пинг и флаги</h3>
+          <p>Задержка меряется через сам сервер. Флаги стран берутся из встроенной базы IP-адресов.</p>
+        </div>
+        <div class="card">
+          <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/></svg></div>
+          <h3>Честный статус</h3>
+          <p>«Защищено» появляется, только когда запрос реально прошёл через ваш сервер, а не когда запустился процесс.</p>
+        </div>
+        <div class="card">
+          <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l18 18M10.6 10.6a2 2 0 0 0 2.8 2.8M9.9 5.1A9.8 9.8 0 0 1 12 5c5 0 9 4.5 10 7a13 13 0 0 1-3.2 4.3M6.6 6.6A13 13 0 0 0 2 12c1 2.5 5 7 10 7a9.7 9.7 0 0 0 4.2-.9"/></svg></div>
+          <h3>Без телеметрии</h3>
+          <p>Ничего никуда не отправляется, кроме как через ваш сервер. Никогда. Код открыт — можно проверить.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="how">
+    <div class="wrap">
+      <h2>Безопасность в основе</h2>
+      <p class="sub">У окна, по которому вы кликаете, нет прав администратора. Привилегированную работу делает небольшая
+        системная служба, и она проверяет каждый запрос.</p>
+      <div class="flow" role="img" aria-label="Программы отправляют трафик через ядро mihomo, которое запускает служба SuperPuperVPN; ядро подключается к вашему серверу по VLESS плюс REALITY, а сервер выходит в интернет.">
+        <div class="node"><small>Ваш компьютер</small><strong>Программы</strong><span>Браузеры, игры, терминал: через системный прокси или TUN</span></div>
+        <div class="arrow" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m0 0-5-5m5 5-5 5"/></svg></div>
+        <div class="node hl"><small>Запускает служба</small><strong>Ядро mihomo</strong><span>Закреплённая версия, проверка SHA-256, конфиг только в памяти</span></div>
+        <div class="arrow" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m0 0-5-5m5 5-5 5"/></svg>VLESS + REALITY</div>
+        <div class="node"><small>Ваш</small><strong>Ваш сервер</strong><span>3x-ui, Marzban, Remnawave или Xray</span></div>
+        <div class="arrow" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m0 0-5-5m5 5-5 5"/></svg></div>
+        <div class="node"><small>Снаружи</small><strong>Интернет</strong><span>Сайты видят ваш сервер, а не вас</span></div>
+      </div>
+      <ul class="points">
+        <li><b>В режиме TUN нет открытых портов.</b> На localhost нет ничего, через что другие программы могли бы выдать ваш IP.</li>
+        <li><b>Служба проверяет, кто к ней обращается.</b> polkit в Linux, закрытый именованный канал в Windows; сетевые клиенты отклоняются.</li>
+        <li><b>Профили зашифрованы.</b> AES-256-GCM, ключ хранится в хранилище ключей системы (libsecret или DPAPI).</li>
+        <li><b>Строгая проверка.</b> Ссылки с параметрами, которые ядро не поддерживает, отклоняются с понятным сообщением, а не подключаются наполовину.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="install">
+    <div class="wrap">
+      <h2>Установка</h2>
+      <p class="sub">Выберите систему. Установщик один раз настраивает фоновую службу, дальше приложение работает от вашего пользователя.</p>
+      <div class="grid">
+        <div class="card os">
+          <h3>Windows 10 / 11</h3>
+          <p>Скачайте <code>.msi</code>, запустите и откройте SuperPuperVPN из меню «Пуск».</p>
+          <p class="note" style="margin:0">Сборки пока без цифровой подписи: если SmartScreen предупредит, выберите <i>Подробнее → Выполнить в любом случае</i>.</p>
+          <a class="btn primary" data-asset=".msi" href="https://github.com/NikitaKnutov/superpupervpn/releases/latest">Скачать .msi</a>
+        </div>
+        <div class="card os">
+          <h3>Fedora 42+</h3>
+          <p>Скачайте <code>.rpm</code> и установите:</p>
+          <pre><code>sudo dnf install ./superpupervpn-*.x86_64.rpm</code></pre>
+          <a class="btn primary" data-asset=".rpm" href="https://github.com/NikitaKnutov/superpupervpn/releases/latest">Скачать .rpm</a>
+        </div>
+        <div class="card os">
+          <h3>Ubuntu, Debian, Mint</h3>
+          <p>Ubuntu 22.04+, Debian 12+, Mint 21+. Скачайте <code>.deb</code>:</p>
+          <pre><code>sudo apt install ./superpupervpn_*_amd64.deb</code></pre>
+          <a class="btn primary" data-asset=".deb" href="https://github.com/NikitaKnutov/superpupervpn/releases/latest">Скачать .deb</a>
+        </div>
+      </div>
+      <p class="note">Другие дистрибутивы: <a href="https://github.com/NikitaKnutov/superpupervpn#build-from-source">сборка из исходников</a>.
+        Портативный <code>.zip</code> для Windows — на <a href="https://github.com/NikitaKnutov/superpupervpn/releases/latest">странице релизов</a>.
+        В каждом релизе есть <code>SHA256SUMS.txt</code>, чтобы проверить скачанный файл.</p>
+    </div>
+  </section>
+
+  <section id="start">
+    <div class="wrap">
+      <h2>Три шага</h2>
+      <p class="sub">Сначала разбираться в настройках не нужно.</p>
+      <ol class="steps">
+        <li class="card"><h3>Скопируйте ссылку</h3><p>Ссылку <code>vless://</code> или адрес подписки из вашей панели.</p></li>
+        <li class="card"><h3>Нажмите Ctrl+V</h3><p>SuperPuperVPN покажет, что нашёл. Нажмите <b>Добавить</b>.</p></li>
+        <li class="card"><h3>Нажмите большую кнопку</h3><p>Выберите «Системный прокси» или TUN. Вы защищены.</p></li>
+      </ol>
+    </div>
+  </section>
+
+  <section id="support">
+    <div class="wrap support">
+      <div>
+        <h2>Поддержать проект</h2>
+        <p class="sub" style="margin-bottom:0">SuperPuperVPN бесплатный, его делает один человек. Без встроенных серверов, рекламы
+          и телеметрии: разработка держится на донатах. Донат — это поддержка клиента; серверы и подписки в него не входят.</p>
+      </div>
+      <div class="card">
+        <p style="margin:0 0 10px"><b>USDT (TRC-20)</b> <span style="color:var(--muted)">· комиссия сети — несколько центов</span></p>
+        <div class="wallet">
+          <code id="wallet">TK8VdDvtU7Mq5b7X59SfpdURfpZR9etFmu</code>
+          <button class="btn ghost" type="button" data-copy="#wallet" style="min-height:40px">Копировать</button>
+        </div>
+        <p class="note" style="margin-bottom:0">Или просто <a href="https://github.com/NikitaKnutov/superpupervpn">поставьте звезду</a> и расскажите другу — это очень помогает.</p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>© Nikita Knutov · <a href="https://github.com/NikitaKnutov/superpupervpn/blob/main/LICENSE">GPL-3.0-or-later</a></span>
+    <nav aria-label="Ссылки внизу страницы">
+      <a href="https://github.com/NikitaKnutov/superpupervpn">Исходный код</a>
+      <a href="https://github.com/NikitaKnutov/superpupervpn/releases">Релизы</a>
+      <a href="https://github.com/NikitaKnutov/superpupervpn/issues">Сообщить об ошибке</a>
+      <a href="https://github.com/NikitaKnutov/superpupervpn/discussions">Обсуждения</a>
+      <a href="https://github.com/NikitaKnutov/superpupervpn/blob/main/SECURITY.md">Безопасность</a>
+    </nav>
+  </div>
+</footer>
+
+<script src="../site.js"></script>
+</body>
+</html>

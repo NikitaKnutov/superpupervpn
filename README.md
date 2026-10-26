@@ -25,6 +25,10 @@
 </p>
 
 <p align="center">
+  <img src="docs/screenshots/demo.gif" width="300" alt="Demo: press the button, the app connects and shows Protected with a running timer, then the server list">
+</p>
+
+<p align="center">
   <img src="docs/screenshots/home-dark.png" width="260" alt="Home screen, dark theme">
   &nbsp;
   <img src="docs/screenshots/servers-dark.png" width="260" alt="Server list with country flags">
@@ -67,6 +71,8 @@ SuperPuperVPN is the opposite:
 > the right file for your system.
 
 Or grab the latest build from **[Releases](https://github.com/NikitaKnutov/superpupervpn/releases/latest)**.
+Every release has a `SHA256SUMS.txt`; to check a download, put it next to the file and run
+`sha256sum -c SHA256SUMS.txt --ignore-missing` (Linux) or `Get-FileHash <file>` (Windows PowerShell).
 
 ### Windows 10 / 11 (x64)
 

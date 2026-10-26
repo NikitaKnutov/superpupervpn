@@ -15,134 +15,14 @@
 <meta property="og:url" content="https://nikitaknutov.github.io/superpupervpn/">
 <meta property="og:image" content="https://nikitaknutov.github.io/superpupervpn/og.png">
 <meta name="twitter:card" content="summary_large_image">
-<style>
-:root {
-  --bg: #0B0D0F; --surface: #15181C; --surface2: #1E2227; --text: #F1F4F2; --muted: #8E97A4;
-  --accent: #C6F046; --accent-text: #0B0D0F; --accent-ink: #C6F046; --border: #262B31;
-  --radius: 20px; --max: 1120px;
-  color-scheme: dark;
-}
-@media (prefers-color-scheme: light) {
-  :root {
-    --bg: #F2F4F1; --surface: #FFFFFF; --surface2: #E9ECE8; --text: #0F1411; --muted: #545C66;
-    --accent: #B6E43C; --accent-text: #0F1411; --accent-ink: #3B6A0A; --border: #DDE1DC;
-    color-scheme: light;
-  }
-}
-* { box-sizing: border-box; }
-html { scroll-behavior: smooth; }
-@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
-body {
-  margin: 0; background: var(--bg); color: var(--text);
-  font: 16px/1.6 Inter, "Inter Variable", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  -webkit-font-smoothing: antialiased;
-}
-a { color: inherit; }
-img { max-width: 100%; height: auto; display: block; }
-code, pre { font-family: ui-monospace, "JetBrains Mono", "Cascadia Code", Consolas, monospace; font-size: 0.9em; }
-.wrap { max-width: var(--max); margin: 0 auto; padding: 0 20px; }
-.skip { position: absolute; left: -999px; }
-.skip:focus { left: 16px; top: 16px; background: var(--accent); color: var(--accent-text); padding: 8px 12px; border-radius: 8px; z-index: 10; }
-:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; border-radius: 6px; }
-
-/* nav */
-header { position: sticky; top: 0; z-index: 5; background: color-mix(in srgb, var(--bg) 85%, transparent); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); }
-nav { display: flex; align-items: center; gap: 24px; height: 64px; }
-.brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 18px; text-decoration: none; letter-spacing: -0.01em; }
-.brand img { width: 32px; height: 32px; }
-nav .links { display: flex; gap: 20px; margin-left: auto; font-size: 15px; }
-nav .links a { text-decoration: none; color: var(--muted); }
-nav .links a:hover { color: var(--text); }
-@media (max-width: 720px) { nav .links a:not(.gh) { display: none; } }
-
-/* buttons */
-.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; padding: 0 22px; border-radius: 999px; font-weight: 700; text-decoration: none; border: 1px solid transparent; cursor: pointer; font-size: 16px; }
-.btn.primary { background: var(--accent); color: var(--accent-text); }
-.btn.primary:hover { filter: brightness(1.06); }
-.btn.ghost { border-color: var(--border); background: var(--surface); }
-.btn.ghost:hover { background: var(--surface2); }
-.btn svg { width: 18px; height: 18px; }
-
-/* hero */
-.hero { display: grid; grid-template-columns: 1.05fr 1fr; gap: 48px; align-items: center; padding-block: 72px 56px; }
-.eyebrow { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 999px; background: var(--surface); border: 1px solid var(--border); color: var(--muted); font-size: 14px; }
-.eyebrow b { color: var(--accent-ink); font-weight: 700; }
-h1 { font-size: clamp(36px, 5.4vw, 60px); line-height: 1.05; letter-spacing: -0.035em; margin: 20px 0 16px; font-weight: 800; }
-h1 em { font-style: normal; color: var(--accent-ink); }
-.lead { font-size: 19px; color: var(--muted); margin: 0 0 28px; max-width: 34em; }
-.cta { display: flex; flex-wrap: wrap; gap: 12px; }
-.meta { margin-top: 16px; color: var(--muted); font-size: 14px; }
-.shots { position: relative; display: flex; justify-content: center; align-items: flex-start; }
-.shots img { flex: none; width: 52%; border-radius: 24px; border: 1px solid var(--border); box-shadow: 0 30px 60px -20px rgb(0 0 0 / 0.55); }
-.shots img:first-child { margin: 6% -8% 0 0; transform: rotate(-4deg); }
-.shots img:last-child { margin-left: -8%; transform: rotate(4deg); z-index: 1; }
-@media (max-width: 880px) {
-  .hero { grid-template-columns: 1fr; padding-top: 48px; gap: 40px; }
-  .hero > * { min-width: 0; }
-  .shots img { width: 58%; }
-}
-
-/* sections */
-section { padding: 72px 0; border-top: 1px solid var(--border); }
-h2 { font-size: clamp(28px, 3.6vw, 40px); letter-spacing: -0.025em; line-height: 1.15; margin: 0 0 12px; }
-.sub { color: var(--muted); margin: 0 0 40px; max-width: 40em; font-size: 18px; }
-.grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
-.grid > *, .steps > * { min-width: 0; }
-@media (max-width: 880px) { .grid { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 560px) { .grid { grid-template-columns: 1fr; } }
-.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; }
-.card h3 { margin: 14px 0 6px; font-size: 18px; letter-spacing: -0.01em; }
-.card p { margin: 0; color: var(--muted); font-size: 15px; }
-.icon { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; background: color-mix(in srgb, var(--accent) 16%, transparent); color: var(--accent-ink); }
-.icon svg { width: 22px; height: 22px; }
-
-/* flow diagram */
-.flow { display: grid; grid-template-columns: 1fr auto 1fr auto 1fr auto 1fr; align-items: stretch; gap: 10px; }
-.node { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 18px; }
-.node.hl { border-color: var(--accent); }
-.node small { display: block; color: var(--accent-ink); font-weight: 700; font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; }
-.node strong { display: block; margin: 4px 0; font-size: 17px; }
-.node span { color: var(--muted); font-size: 14px; }
-.arrow { display: grid; place-items: center; color: var(--muted); font-size: 12px; text-align: center; min-width: 64px; }
-.arrow svg { width: 28px; height: 28px; color: var(--accent-ink); }
-@media (max-width: 880px) {
-  .flow { grid-template-columns: 1fr; }
-  .arrow { min-height: 40px; }
-  .arrow svg { transform: rotate(90deg); }
-}
-.points { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px 32px; margin: 40px 0 0; padding: 0; list-style: none; }
-.points li { padding-left: 28px; position: relative; color: var(--muted); }
-.points li::before { content: ""; position: absolute; left: 0; top: 0.5em; width: 14px; height: 8px; border-left: 2.5px solid var(--accent-ink); border-bottom: 2.5px solid var(--accent-ink); transform: rotate(-45deg); }
-.points b { color: var(--text); }
-@media (max-width: 720px) { .points { grid-template-columns: 1fr; } }
-
-/* install */
-.os { display: flex; flex-direction: column; gap: 12px; }
-.os h3 { margin: 0; font-size: 20px; }
-.os p { margin: 0; }
-.os .btn { align-self: flex-start; margin-top: auto; }
-.code { position: relative; }
-pre { margin: 0; background: var(--surface2); border-radius: 12px; padding: 12px 72px 12px 14px; white-space: pre-wrap; word-break: break-all; }
-.copy { position: absolute; top: 6px; right: 6px; border: 1px solid var(--border); background: var(--surface); color: var(--muted); border-radius: 8px; font: inherit; font-size: 12px; padding: 4px 8px; cursor: pointer; }
-.copy:hover { color: var(--text); }
-.note { color: var(--muted); font-size: 14px; margin-top: 24px; }
-
-/* steps */
-.steps { counter-reset: s; display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; padding: 0; margin: 0; list-style: none; }
-.steps li { counter-increment: s; }
-.steps li::before { content: counter(s); display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; background: var(--accent); color: var(--accent-text); font-weight: 800; }
-@media (max-width: 720px) { .steps { grid-template-columns: 1fr; } }
-
-/* support */
-.support { display: grid; grid-template-columns: 1.2fr 1fr; gap: 24px; align-items: center; }
-.wallet { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-.wallet code { background: var(--surface2); padding: 10px 12px; border-radius: 10px; word-break: break-all; font-size: 14px; }
-@media (max-width: 720px) { .support { grid-template-columns: 1fr; } }
-
-footer { border-top: 1px solid var(--border); padding: 32px 0 48px; color: var(--muted); font-size: 14px; }
-footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: center; }
-footer nav { height: auto; gap: 16px; margin-left: auto; flex-wrap: wrap; }
-</style>
+<link rel="alternate" hreflang="en" href="https://nikitaknutov.github.io/superpupervpn/">
+<link rel="alternate" hreflang="ru" href="https://nikitaknutov.github.io/superpupervpn/ru/">
+<link rel="alternate" hreflang="x-default" href="https://nikitaknutov.github.io/superpupervpn/">
+<link rel="stylesheet" href="site.css">
+<script>
+// Russian-speaking visitors who have not picked a language yet get the Russian page.
+try { if (!localStorage.getItem('lang') && /^ru\b/i.test(navigator.language)) location.replace('ru/'); } catch {}
+</script>
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
@@ -157,6 +37,7 @@ footer nav { height: auto; gap: 16px; margin-left: auto; flex-wrap: wrap; }
         <a href="#install">Install</a>
         <a class="gh" href="https://github.com/NikitaKnutov/superpupervpn">GitHub</a>
       </div>
+      <span class="lang"><a href="./" aria-current="page" data-lang="en" hreflang="en">EN</a><a href="ru/" data-lang="ru" hreflang="ru" lang="ru">RU</a></span>
     </nav>
   </div>
 </header>
@@ -275,7 +156,8 @@ footer nav { height: auto; gap: 16px; margin-left: auto; flex-wrap: wrap; }
         </div>
       </div>
       <p class="note">Other distributions: <a href="https://github.com/NikitaKnutov/superpupervpn#build-from-source">build from source</a>.
-        A portable Windows <code>.zip</code> is on the <a href="https://github.com/NikitaKnutov/superpupervpn/releases/latest">releases page</a>.</p>
+        A portable Windows <code>.zip</code> is on the <a href="https://github.com/NikitaKnutov/superpupervpn/releases/latest">releases page</a>.
+        Every release has <code>SHA256SUMS.txt</code> to check your download.</p>
     </div>
   </section>
 
@@ -323,47 +205,6 @@ footer nav { height: auto; gap: 16px; margin-left: auto; flex-wrap: wrap; }
   </div>
 </footer>
 
-<script>
-// Copy buttons: commands in <pre> blocks and the wallet address.
-document.querySelectorAll('pre').forEach(pre => {
-  const box = document.createElement('div');
-  box.className = 'code';
-  pre.replaceWith(box);
-  const b = document.createElement('button');
-  b.className = 'copy'; b.type = 'button'; b.textContent = 'Copy';
-  b.dataset.copyText = pre.innerText;
-  box.append(pre, b);
-});
-document.addEventListener('click', async e => {
-  const b = e.target.closest('[data-copy], [data-copy-text]');
-  if (!b) return;
-  const text = b.dataset.copyText ?? document.querySelector(b.dataset.copy).textContent;
-  try { await navigator.clipboard.writeText(text.trim()); b.textContent = 'Copied'; }
-  catch { b.textContent = 'Select and copy'; }
-  setTimeout(() => (b.textContent = 'Copy'), 1500);
-});
-
-// Point the download buttons at the files of the latest release; without JS or the API they open the releases page.
-(async () => {
-  const ua = navigator.userAgent;
-  const os = /Windows/i.test(ua) ? 'win' : /Fedora|Red Hat/i.test(ua) ? 'rpm' : /Linux|X11/i.test(ua) ? 'linux' : 'other';
-  const label = document.getElementById('download-label');
-  label.textContent = { win: 'Download for Windows', rpm: 'Download for Fedora', linux: 'Download for Linux', other: 'Download' }[os];
-  try {
-    const r = await fetch('https://api.github.com/repos/NikitaKnutov/superpupervpn/releases/latest');
-    if (!r.ok) return;
-    const rel = await r.json();
-    const find = ext => rel.assets.find(a => a.name.endsWith(ext));
-    document.querySelectorAll('[data-version]').forEach(el => (el.textContent = rel.tag_name));
-    document.querySelectorAll('[data-asset]').forEach(a => {
-      const asset = find(a.dataset.asset);
-      if (asset) a.href = asset.browser_download_url;
-    });
-    // Generic Linux gets the releases page: .deb or .rpm depends on the distro.
-    const main = { win: find('.msi'), rpm: find('.rpm') }[os];
-    if (main) document.getElementById('download').href = main.browser_download_url;
-  } catch { /* offline or rate-limited: keep the releases page links */ }
-})();
-</script>
+<script src="site.js"></script>
 </body>
 </html>

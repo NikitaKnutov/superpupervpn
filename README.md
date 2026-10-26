@@ -146,7 +146,7 @@ helper generated and validated itself.
 
 `vless://` with `security=reality|tls|none`, `flow=xtls-rprx-vision`, transports `tcp`, `ws`, `httpupgrade`,
 `grpc`, `xhttp`, `http` (h2), ML-KEM `encryption`, `alpn`, `ech`, certificate pinning (`pcs`).
-Links with parameters the core cannot honour (`pqv`, `fm`, `spx` other than `/`, `type=kcp`, `vcn`) are refused
+Links with parameters the core cannot honour (`pqv`, `fm`, `type=kcp`, `vcn`) are refused
 with a clear message instead of connecting half-way. Other schemes (vmess, trojan, ss, ...) are recognised and
 reported as unsupported.
 

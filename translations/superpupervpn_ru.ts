@@ -913,24 +913,25 @@ This may break the connection or let part of the traffic bypass the tunnel.</sou
     <message>
         <location line="+2"/>
         <location line="+15"/>
-        <location line="+51"/>
+        <location line="+40"/>
+        <location line="+12"/>
         <source>contains control characters</source>
         <translation>содержит управляющие символы</translation>
     </message>
     <message>
-        <location line="-63"/>
+        <location line="-64"/>
         <source>missing</source>
         <translation>не указан</translation>
     </message>
     <message>
         <location line="+2"/>
         <location line="+33"/>
-        <location line="+30"/>
+        <location line="+31"/>
         <source>not a domain or an IP address</source>
         <translation>не домен и не IP-адрес</translation>
     </message>
     <message>
-        <location line="-61"/>
+        <location line="-62"/>
         <source>must be from 1 to 65535</source>
         <translation>должен быть от 1 до 65535</translation>
     </message>
@@ -1000,12 +1001,7 @@ This may break the connection or let part of the traffic bypass the tunnel.</sou
         <translation>ожидается hex чётной длины, до 16 символов</translation>
     </message>
     <message>
-        <location line="+4"/>
-        <source>The spx parameter is not supported by the core</source>
-        <translation>Параметр spx не поддерживается ядром</translation>
-    </message>
-    <message>
-        <location line="+5"/>
+        <location line="+10"/>
         <source>a comma-separated list without spaces</source>
         <translation>список через запятую без пробелов</translation>
     </message>

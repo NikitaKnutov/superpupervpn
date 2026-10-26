@@ -54,6 +54,19 @@ private slots:
         QVERIFY(!r.profile.nonStandardId());
     }
 
+    // 3x-ui puts a random spx into nearly every link; it must not block the import.
+    void spxPathAccepted()
+    {
+        const ParseResult r = parseLink(
+            u"vless://"_s + kUuid + u"@203.0.113.7:443?encryption=none&flow=xtls-rprx-vision&fp=chrome&pbk="_s + kPbk
+            + u"&security=reality&sid=41&sni=www.example.org&spx=%2Fa946e9d04d0603b&support-x25519mlkem768=true"
+              "&type=tcp#UAE1-Office5"_s);
+        QVERIFY2(!r.error, r.error ? qPrintable(r.error->text()) : "");
+        QCOMPARE(r.profile.spx, u"/a946e9d04d0603b"_s);
+        QVERIFY(r.profile.unknownParams.isEmpty());
+        QVERIFY(!QJsonDocument(proxyEntry(r.profile, u"p"_s)).toJson().contains("a946e9d04d0603b"));
+    }
+
     void nonStandardId()
     {
         const ParseResult r = parseLink(reality(QString(), u"not-a-uuid"_s));
@@ -102,8 +115,7 @@ private slots:
         QTest::newRow("vmess") << u"vmess://eyJ2IjoyfQ=="_s << "scheme" << "Protocol is not supported";
         QTest::newRow("trojan") << u"trojan://pw@example.com:443"_s << "scheme" << "Protocol is not supported";
         QTest::newRow("pqv") << reality(u"&pqv=abc"_s) << "pqv" << "The pqv parameter is not supported by the core";
-        QTest::newRow("spx path") << reality().replace(u"spx=%2F"_s, u"spx=%2Fpath"_s) << "spx"
-                                  << "The spx parameter is not supported by the core";
+        QTest::newRow("spx control") << reality().replace(u"spx=%2F"_s, u"spx=%2F%07"_s) << "spx" << "control characters";
         QTest::newRow("fm") << reality(u"&fm=%7B%7D"_s) << "fm" << "not supported by the core";
         QTest::newRow("too long") << reality(u"&x="_s + QString(9000, u'a')) << "" << "8 KB";
         QTest::newRow("fragment control") << reality().replace(u"%201"_s, u"%07"_s) << "name" << "";

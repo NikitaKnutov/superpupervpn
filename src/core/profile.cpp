@@ -209,8 +209,9 @@ std::optional<FieldError> validate(const Profile &p)
             return err(u"sid"_s, QCoreApplication::translate("Profile", "expected hex of even length, up to 16 characters"));
     }
 
-    if (!p.spx.isEmpty() && p.spx != u"/")
-        return unsupported(u"spx"_s, QCoreApplication::translate("Profile", "The spx parameter is not supported by the core"));
+    // spx only shapes what Xray does after a failed REALITY check; mihomo has no such step, so it is kept, not used.
+    if (hasControlChars(p.spx))
+        return err(u"spx"_s, QCoreApplication::translate("Profile", "contains control characters"));
 
     if (!p.alpn.isEmpty()) {
         for (const QString &a : p.alpn.split(u','))

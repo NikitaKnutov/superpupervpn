@@ -19,7 +19,7 @@ const QSet<QString> kKnownParams = {u"type"_s, u"encryption"_s, u"flow"_s, u"sec
                                     u"fp"_s, u"pbk"_s, u"sid"_s, u"spx"_s, u"pqv"_s, u"alpn"_s, u"path"_s,
                                     u"host"_s, u"serviceName"_s, u"mode"_s, u"extra"_s, u"ech"_s,
                                     u"pcs"_s, u"vcn"_s, u"fm"_s, u"allowInsecure"_s, u"insecure"_s,
-                                    u"headerType"_s};
+                                    u"headerType"_s, u"support-x25519mlkem768"_s};
 
 std::optional<QString> pct(const QString &s)
 {

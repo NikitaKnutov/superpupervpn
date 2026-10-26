@@ -1,3 +1,9 @@
+superpupervpn (0.2.1-1) unstable; urgency=medium
+
+  * Links with an spx path (as 3x-ui makes them) import instead of being refused
+
+ -- SuperPuperVPN <noreply@superpupervpn.invalid>  Mon, 26 Oct 2026 14:00:00 +0300
+
 superpupervpn (0.2.0-1) unstable; urgency=medium
 
   * English interface by default; Russian in Settings -> Language

@@ -6,7 +6,9 @@
 
 <p align="center">
   <b>One button. Your own VLESS + REALITY servers. Windows and Linux.</b><br>
-  A clean desktop client that turns a <code>vless://</code> link into a working connection in seconds.
+  A clean desktop client that turns a <code>vless://</code> link into a working connection in seconds.<br>
+  <a href="https://nikitaknutov.github.io/superpupervpn/"><b>Website</b></a> ·
+  <a href="https://github.com/NikitaKnutov/superpupervpn/releases/latest"><b>Download</b></a>
 </p>
 
 <p align="center">
@@ -204,6 +206,7 @@ src/gui      Qt Quick app: storage, system proxy, tray, QML screens
 tests        unit tests (link vectors, config security checks, theme contrast, translations)
 translations Qt Linguist files; English is the source language
 packaging    systemd unit, polkit action, .desktop, RPM spec, Debian packaging, WiX installer
+docs         the website (GitHub Pages) and README screenshots
 tools        make-geo.py: rebuilds assets/geo/country.bin from the DB-IP Lite CSV
 licenses     third-party license texts shipped with the packages
 ```

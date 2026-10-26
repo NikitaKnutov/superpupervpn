@@ -6,9 +6,15 @@
 
 <p align="center">
   <b>One button. Your own VLESS + REALITY servers. Windows and Linux.</b><br>
-  A clean desktop client that turns a <code>vless://</code> link into a working connection in seconds.<br>
-  <a href="https://nikitaknutov.github.io/superpupervpn/"><b>Website</b></a> ·
-  <a href="https://github.com/NikitaKnutov/superpupervpn/releases/latest"><b>Download</b></a>
+  A clean desktop client that turns a <code>vless://</code> link into a working connection in seconds.
+</p>
+
+<p align="center">
+  <a href="https://nikitaknutov.github.io/superpupervpn/"><img src="docs/buttons/website.svg" width="320" height="64" alt="Visit the website"></a>
+  &nbsp;
+  <a href="https://github.com/NikitaKnutov/superpupervpn/releases/latest"><img src="docs/buttons/download.svg" width="320" height="64" alt="Download for Windows and Linux"></a>
+  <br>
+  <a href="https://nikitaknutov.github.io/superpupervpn/"><b>nikitaknutov.github.io/superpupervpn</b></a>
 </p>
 
 <p align="center">
@@ -57,7 +63,10 @@ SuperPuperVPN is the opposite:
 
 ## Install
 
-Grab the latest build from **[Releases](https://github.com/NikitaKnutov/superpupervpn/releases/latest)**.
+> **The easiest way: open the [website](https://nikitaknutov.github.io/superpupervpn/) and press Download.** It picks
+> the right file for your system.
+
+Or grab the latest build from **[Releases](https://github.com/NikitaKnutov/superpupervpn/releases/latest)**.
 
 ### Windows 10 / 11 (x64)
 

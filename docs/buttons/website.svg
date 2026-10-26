@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="64" viewBox="0 0 320 64" role="img" aria-label="Visit the website">
+  <rect width="320" height="64" rx="32" fill="#C6F046"/>
+  <g fill="none" stroke="#0B0D0F" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" transform="translate(34 18)">
+    <circle cx="14" cy="14" r="12"/>
+    <path d="M2 14h24M14 2a18 18 0 0 1 0 24M14 2a18 18 0 0 0 0 24"/>
+  </g>
+  <text x="182" y="40" text-anchor="middle" fill="#0B0D0F" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="21" font-weight="700">Visit the website</text>
+</svg>

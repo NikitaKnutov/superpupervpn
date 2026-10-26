@@ -72,10 +72,10 @@ h1 em { font-style: normal; color: var(--accent-ink); }
 .lead { font-size: 19px; color: var(--muted); margin: 0 0 28px; max-width: 34em; }
 .cta { display: flex; flex-wrap: wrap; gap: 12px; }
 .meta { margin-top: 16px; color: var(--muted); font-size: 14px; }
-.shots { position: relative; display: flex; justify-content: center; gap: 0; }
-.shots img { width: 52%; border-radius: 24px; border: 1px solid var(--border); box-shadow: 0 30px 60px -20px rgb(0 0 0 / 0.55); }
-.shots img:first-child { transform: rotate(-4deg) translate(8%, 6%); }
-.shots img:last-child { transform: rotate(4deg) translate(-8%, -2%); z-index: 1; }
+.shots { position: relative; display: flex; justify-content: center; align-items: flex-start; }
+.shots img { flex: none; width: 52%; border-radius: 24px; border: 1px solid var(--border); box-shadow: 0 30px 60px -20px rgb(0 0 0 / 0.55); }
+.shots img:first-child { margin: 6% -8% 0 0; transform: rotate(-4deg); }
+.shots img:last-child { margin-left: -8%; transform: rotate(4deg); z-index: 1; }
 @media (max-width: 880px) {
   .hero { grid-template-columns: 1fr; padding-top: 48px; gap: 40px; }
   .hero > * { min-width: 0; }

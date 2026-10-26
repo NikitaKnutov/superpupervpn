@@ -1,5 +1,6 @@
 #include "sysproxy.h"
 
+#include <QCoreApplication>
 #include <QJsonArray>
 
 #include <windows.h>
@@ -100,7 +101,7 @@ bool set(int port, QString *error)
         ok = setOne(c, PROXY_TYPE_DIRECT | PROXY_TYPE_PROXY, u"127.0.0.1:%1"_s.arg(port), bypassList(), QString()) && ok;
     notifyChanged();
     if (!ok)
-        *error = u"WinINet не принял настройки прокси"_s;
+        *error = QCoreApplication::translate("SysProxy", "WinINet rejected the proxy settings");
     return ok;
 }
 
@@ -114,7 +115,7 @@ bool restore(const QJsonObject &snapshot, QString *error)
     }
     notifyChanged();
     if (!ok)
-        *error = u"не удалось вернуть прежние настройки прокси"_s;
+        *error = QCoreApplication::translate("SysProxy", "failed to restore the previous proxy settings");
     return ok;
 }
 

@@ -13,7 +13,7 @@ ColumnLayout {
     Label {
         Layout.leftMargin: 16
         Layout.topMargin: 4
-        text: qsTr("Логи")
+        text: qsTr("Logs")
         font.pixelSize: Theme.xl
         font.weight: Font.Bold
         color: Theme.text
@@ -23,7 +23,7 @@ ColumnLayout {
         Layout.fillWidth: true
         Layout.leftMargin: 16
         Layout.rightMargin: 16
-        labels: [qsTr("Приложение"), qsTr("Ядро")]
+        labels: [qsTr("App"), qsTr("Core")]
         current: page.tab
         onPicked: index => page.tab = index
     }
@@ -34,7 +34,7 @@ ColumnLayout {
         Layout.rightMargin: 16
         spacing: Theme.grid
         Repeater {
-            model: [qsTr("Все"), qsTr("Info+"), qsTr("Warning+"), qsTr("Ошибки")]
+            model: [qsTr("All"), qsTr("Info+"), qsTr("Warning+"), qsTr("Errors")]
             PillButton {
                 required property int index
                 required property string modelData
@@ -57,18 +57,18 @@ ColumnLayout {
         Field {
             Layout.fillWidth: true
             iconSource: "qrc:/icons/ui/search.svg"
-            placeholderText: qsTr("Поиск")
+            placeholderText: qsTr("Search")
             text: page.logModel.search
             onTextEdited: page.logModel.search = text
         }
         PillButton {
             implicitHeight: 46
-            text: page.logModel.paused ? qsTr("Продолжить") : qsTr("Пауза")
+            text: page.logModel.paused ? qsTr("Resume") : qsTr("Pause")
             onClicked: page.logModel.paused = !page.logModel.paused
         }
         PillButton {
             implicitHeight: 46
-            text: qsTr("Экспорт")
+            text: qsTr("Export")
             onClicked: saveDialog.open()
         }
     }
@@ -106,7 +106,7 @@ ColumnLayout {
             Label {
                 anchors.centerIn: parent
                 visible: list.count === 0
-                text: qsTr("Пока пусто")
+                text: qsTr("Nothing here yet")
                 color: Theme.muted
             }
         }
@@ -116,7 +116,7 @@ ColumnLayout {
         id: saveDialog
         fileMode: FileDialog.SaveFile
         defaultSuffix: "zip"
-        nameFilters: [qsTr("Архив zip (*.zip)")]
+        nameFilters: [qsTr("Zip archive (*.zip)")]
         onAccepted: App.exportLogs(selectedFile)
     }
 }

@@ -9,7 +9,7 @@ AbstractButton {
     readonly property color tone: on ? Theme.accent : connState === "connecting" ? Theme.connecting : connState === "error" ? Theme.error : Theme.muted
     implicitWidth: size * 1.55
     implicitHeight: size * 1.55
-    Accessible.name: connState === "connected" || connState === "connecting" ? qsTr("Отключить") : qsTr("Подключить")
+    Accessible.name: connState === "connected" || connState === "connecting" ? qsTr("Disconnect") : qsTr("Connect")
 
     Repeater {
         model: [1.55, 1.32, 1.12]

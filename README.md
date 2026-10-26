@@ -50,7 +50,7 @@ SuperPuperVPN is the opposite:
   and **country flags detected from the server IP** with an offline database.
 - **Honest status**: "Connected" only after a real request went through the server.
 - **Auto-recovery**: the core is restarted if it crashes; the system proxy is restored after a crash or a power loss.
-- **Dark and light themes**, tray icon, autostart, connect on start, a log viewer with masked export.
+- **English and Russian interface**, dark and light themes, tray icon, autostart, connect on start, a log viewer with masked export.
 - **No telemetry.** Ever.
 
 ## Install
@@ -70,7 +70,7 @@ cannot start until the builds are signed.
 A portable `.zip` is attached as well; in that case run `superpupervpn-helper.exe` as administrator yourself.
 
 > Windows support is new. If something does not work, please open an issue with the log export
-> (*Logs → Export*, «Логи» → «Экспорт» in the app).
+> (*Logs → Export* in the app).
 
 ### Fedora Linux 42 or newer (x86_64)
 
@@ -103,14 +103,13 @@ Other distributions: build from source (see below).
 
 ## Quick start
 
-The interface is in Russian for now (an English translation is very welcome, see [Contributing](#contributing)),
-so button names are given below as **English** («Русский»).
+The interface is in English by default; Russian is one click away in **Settings → Language**.
 
 1. Copy your `vless://...` link (or a subscription URL).
-2. Open SuperPuperVPN and press **`Ctrl+V`** (or the **+** button) → **Add** («Добавить»).
-3. Pick **System proxy** («Системный прокси») or **TUN** and press the big button.
+2. Open SuperPuperVPN and press **`Ctrl+V`** (or the **+** button) → **Add**.
+3. Pick **System proxy** or **TUN** and press the big button.
 
-Tap a server in **Servers** («Серверы») to select it; **Check all** («Проверить все») measures the latency of every server.
+Tap a server in **Servers** to select it; **Check all** measures the latency of every server.
 
 ## How it works
 
@@ -155,19 +154,19 @@ reported as unsupported.
 
 | Symptom | What to do |
 |---|---|
-| "Service is not running" («Служба не запущена») | *Settings → Service → Start* («Настройки» → «Служба» → «Запустить»), or `sudo systemctl start superpupervpn-helper` |
-| "Server does not respond" («сервер не отвечает») | The server refused the handshake or is unreachable. Commercial subscriptions often have dead nodes: **Check all** («Проверить все») in **Servers** shows which ones answer. For your own server, check the link with another client or get a fresh one from your panel. |
-| TUN connects but nothing loads | Another VPN is running and takes the traffic. The app lists it before connecting and in *Diagnostics* («Диагностика»); press *Turn off other VPNs* («Выключить другие VPN»), or use proxy mode, which works next to other VPNs. |
+| "Service is not running" | *Settings → Service → Start*, or `sudo systemctl start superpupervpn-helper` |
+| "Server does not respond" | The server refused the handshake or is unreachable. Commercial subscriptions often have dead nodes: **Check all** in **Servers** shows which ones answer. For your own server, check the link with another client or get a fresh one from your panel. |
+| TUN connects but nothing loads | Another VPN is running and takes the traffic. The app lists it before connecting and in *Diagnostics*; press *Turn off other VPNs*, or use proxy mode, which works next to other VPNs. |
 | No tray icon on GNOME | Install and enable the AppIndicator extension. |
 | Proxy mode does not work in a terminal | CLI tools ignore the desktop proxy setting; use TUN mode. |
 
 ## Build from source
 
-Requirements: CMake ≥ 3.21, a C++20 compiler, Qt ≥ 6.8 (Base, Declarative, Network), OpenSSL 3,
+Requirements: CMake ≥ 3.21, a C++20 compiler, Qt ≥ 6.8 (Base, Declarative, Network, Linguist tools), OpenSSL 3,
 libsecret (Linux).
 
 ```bash
-sudo dnf install cmake ninja-build gcc-c++ qt6-qtbase-devel qt6-qtdeclarative-devel openssl-devel libsecret-devel
+sudo dnf install cmake ninja-build gcc-c++ qt6-qtbase-devel qt6-qtdeclarative-devel qt6-qttools-devel qt6-linguist openssl-devel libsecret-devel
 cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo
 cmake --build build
 ctest --test-dir build
@@ -203,6 +202,7 @@ src/core     link parser, validation, subscriptions, core config generator, mask
 src/helper   privileged service: JSON-RPC server, core process manager, platform layer
 src/gui      Qt Quick app: storage, system proxy, tray, QML screens
 tests        unit tests (link vectors, config security checks, theme contrast, translations)
+translations Qt Linguist files; English is the source language
 packaging    systemd unit, polkit action, .desktop, RPM spec, Debian packaging, WiX installer
 tools        make-geo.py: rebuilds assets/geo/country.bin from the DB-IP Lite CSV
 licenses     third-party license texts shipped with the packages
@@ -212,17 +212,20 @@ licenses     third-party license texts shipped with the packages
 
 Pull requests are welcome. The most useful things right now:
 
-- **An English UI.** The QML screens already wrap their strings in `qsTr()`; some messages in the C++ code
-  still need to be marked for translation.
+- **Translations.** Strings are written in English and wrapped in `tr()` / `qsTr()`. To add a language, add
+  `translations/superpupervpn_<lang>.ts` to `qt_add_translations` in [`CMakeLists.txt`](CMakeLists.txt), run
+  `cmake --build build --target update_translations`, translate it in Qt Linguist and add the language to
+  `setLanguage()` in [`src/core/i18n.cpp`](src/core/i18n.cpp) and to the picker in the settings screen.
 - **Testing on other distributions** and on Windows, with a log export attached to the issue.
 
-Run `ctest --test-dir build` before sending a PR. By contributing you agree that your code is released under
+Run `ctest --test-dir build` before sending a PR. After changing UI strings, run the `update_translations`
+target too: a test fails if a string is missing from the Russian translation. By contributing you agree that your code is released under
 the project's license (GPL-3.0-or-later).
 
 ## Feedback
 
 - **Bugs and ideas**: [Issues](https://github.com/NikitaKnutov/superpupervpn/issues). The templates ask for the
-  version, the OS and an exported log (*Logs → Export*, «Логи» → «Экспорт»; personal data is masked).
+  version, the OS and an exported log (*Logs → Export*; personal data is masked).
 - **Questions and discussions**: [Discussions](https://github.com/NikitaKnutov/superpupervpn/discussions).
 - **Vulnerabilities**: privately only, see [SECURITY.md](SECURITY.md).
 

@@ -5,6 +5,7 @@ add_library(libcore STATIC
     configgen.cpp configgen.h
     masking.cpp masking.h
     geoip.cpp geoip.h
+    i18n.cpp i18n.h
     protocol.h
 )
 set_target_properties(libcore PROPERTIES OUTPUT_NAME rlcore)

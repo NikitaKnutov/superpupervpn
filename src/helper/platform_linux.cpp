@@ -2,6 +2,7 @@
 
 #include "protocol.h"
 
+#include <QCoreApplication>
 #include <QDir>
 #include <QElapsedTimer>
 #include <QFile>
@@ -65,16 +66,16 @@ QProcessEnvironment coreEnvironment()
 bool ensurePrivateDir(const QString &path, QString *error)
 {
     if (!QDir().mkpath(path)) {
-        *error = u"не удалось создать %1"_s.arg(path);
+        *error = QCoreApplication::translate("Platform", "failed to create %1").arg(path);
         return false;
     }
     struct stat st{};
     if (lstat(QFile::encodeName(path).constData(), &st) != 0 || !S_ISDIR(st.st_mode) || st.st_uid != geteuid()) {
-        *error = u"%1 принадлежит другому пользователю"_s.arg(path);
+        *error = QCoreApplication::translate("Platform", "%1 belongs to another user").arg(path);
         return false;
     }
     if (chmod(QFile::encodeName(path).constData(), 0700) != 0) {
-        *error = u"не удалось выставить права на %1"_s.arg(path);
+        *error = QCoreApplication::translate("Platform", "failed to set permissions on %1").arg(path);
         return false;
     }
     return true;
@@ -84,26 +85,26 @@ bool coreBinaryTrusted(const QString &path, QString *error)
 {
     const QString real = QFileInfo(path).canonicalFilePath();
     if (real.isEmpty()) {
-        *error = u"ядро не найдено: %1"_s.arg(path);
+        *error = QCoreApplication::translate("Platform", "core not found: %1").arg(path);
         return false;
     }
     struct stat st{};
     if (stat(QFile::encodeName(real).constData(), &st) != 0 || !S_ISREG(st.st_mode)) {
-        *error = u"ядро не является файлом"_s;
+        *error = QCoreApplication::translate("Platform", "the core is not a regular file");
         return false;
     }
     auto trustedOwner = [](uid_t uid) { return uid == 0 || uid == geteuid(); };
     if (!trustedOwner(st.st_uid) || (st.st_mode & 022)) {
-        *error = u"файл ядра доступен на запись другим пользователям"_s;
+        *error = QCoreApplication::translate("Platform", "the core file is writable by other users");
         return false;
     }
     for (QDir dir = QFileInfo(real).dir();; dir.cdUp()) {
         if (stat(QFile::encodeName(dir.absolutePath()).constData(), &st) != 0) {
-            *error = u"нет доступа к %1"_s.arg(dir.absolutePath());
+            *error = QCoreApplication::translate("Platform", "no access to %1").arg(dir.absolutePath());
             return false;
         }
         if (!trustedOwner(st.st_uid) || ((st.st_mode & 022) && !(st.st_mode & S_ISVTX))) {
-            *error = u"папка %1 доступна на запись другим пользователям"_s.arg(dir.absolutePath());
+            *error = QCoreApplication::translate("Platform", "folder %1 is writable by other users").arg(dir.absolutePath());
             return false;
         }
         if (dir.isRoot())
@@ -295,7 +296,7 @@ void HelperServer::authorize(QLocalSocket *socket)
         qWarning("polkit denied %s", qPrintable(peer));
         socket->write(ipc::encode({{u"jsonrpc"_s, u"2.0"_s}, {u"id"_s, QJsonValue::Null},
                                    {u"error"_s, QJsonObject{{u"code"_s, -32003},
-                                                           {u"message"_s, u"Нет прав на управление службой"_s}}}}));
+                                                           {u"message"_s, QCoreApplication::translate("Platform", "Not allowed to control the service")}}}}));
         socket->disconnectFromServer();
     });
     check->start(u"pkcheck"_s, {u"--action-id"_s, devOverride("SUPERPUPERVPN_POLKIT_ACTION", u"org.superpupervpn.helper.control"_s),

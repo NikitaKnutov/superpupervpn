@@ -1,5 +1,6 @@
 #include "sysproxy.h"
 
+#include <QCoreApplication>
 #include <QFile>
 #include <QJsonDocument>
 #include <QSaveFile>
@@ -20,13 +21,13 @@ bool SystemProxy::apply(int port, QString *error)
     if (!markerPort()) {
         QSaveFile snap(m_dir + u"/sysproxy-snapshot.json"_s);
         if (!snap.open(QIODevice::WriteOnly) || snap.write(QJsonDocument(sysproxy::capture()).toJson()) < 0 || !snap.commit()) {
-            *error = u"не удалось сохранить снимок настроек прокси"_s;
+            *error = QCoreApplication::translate("SysProxy", "failed to save a snapshot of the proxy settings");
             return false;
         }
     }
     QSaveFile marker(m_dir + u"/proxy_applied"_s);
     if (!marker.open(QIODevice::WriteOnly) || marker.write(QByteArray::number(port)) < 0 || !marker.commit()) {
-        *error = u"не удалось записать маркер"_s;
+        *error = QCoreApplication::translate("SysProxy", "failed to write the marker");
         return false;
     }
     return sysproxy::set(port, error);

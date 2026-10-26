@@ -1,9 +1,11 @@
 #include "helper.h"
 
 #include "coreprocess.h"
+#include "i18n.h"
 #include "platform.h"
 #include "protocol.h"
 
+#include <QCoreApplication>
 #include <QDateTime>
 #include <QHostAddress>
 #include <QJsonArray>
@@ -103,7 +105,7 @@ Helper::Helper(QObject *parent)
     connect(m_core, &CoreProcess::traffic, this, [this](const QJsonObject &t) { broadcast(u"traffic"_s, t); });
     connect(m_test, &CoreProcess::logLine, this, [this](const QString &l, const QString &m) {
         if (l != u"info" && l != u"debug")
-            log(u"core"_s, l, u"[проверка] "_s + m);
+            log(u"core"_s, l, QCoreApplication::translate("Helper", "[test] ") + m);
     });
 }
 
@@ -164,7 +166,7 @@ void Helper::onReadyRead(QLocalSocket *s)
         QJsonParseError pe;
         const QJsonDocument doc = QJsonDocument::fromJson(line, &pe);
         if (!doc.isObject())
-            replyError(s, QJsonValue::Null, ParseError, u"неверный JSON"_s);
+            replyError(s, QJsonValue::Null, ParseError, QCoreApplication::translate("Helper", "invalid JSON"));
         else
             dispatch(s, doc.object());
         it = m_clients.find(s);
@@ -228,7 +230,7 @@ void Helper::dispatch(QLocalSocket *s, const QJsonObject &req)
     const QString method = req.value(u"method"_s).toString();
     const QJsonObject params = req.value(u"params"_s).toObject();
     if (req.value(u"jsonrpc"_s) != u"2.0"_s || method.isEmpty()) {
-        replyError(s, id, InvalidRequest, u"неверный запрос"_s);
+        replyError(s, id, InvalidRequest, QCoreApplication::translate("Helper", "invalid request"));
         return;
     }
 
@@ -237,7 +239,7 @@ void Helper::dispatch(QLocalSocket *s, const QJsonObject &req)
         const QVersionNumber self = QVersionNumber::fromString(QStringLiteral(SUPERPUPERVPN_VERSION));
         if (params.value(u"protocol"_s).toInt(ipc::kProtocolMajor) != ipc::kProtocolMajor
             || client.majorVersion() != self.majorVersion()) {
-            replyError(s, id, VersionMismatch, u"Версии приложения и службы несовместимы — переустановите SuperPuperVPN"_s);
+            replyError(s, id, VersionMismatch, QCoreApplication::translate("Helper", "The app and service versions are incompatible. Please reinstall SuperPuperVPN"));
             return;
         }
         reply(s, id, helloResult());
@@ -261,13 +263,19 @@ void Helper::dispatch(QLocalSocket *s, const QJsonObject &req)
         testDelay(s, id, params);
     } else if (method == u"diagnostics") {
         diagnostics(s, id);
+    } else if (method == u"setLanguage") {
+        // shortcut: one language for the whole helper, so with two GUIs of different users the last one wins
+        if (setLanguage(params.value(u"language"_s).toString()))
+            reply(s, id, {{u"ok"_s, true}});
+        else
+            replyError(s, id, InvalidParams, QCoreApplication::translate("Helper", "unknown language"), u"language"_s);
     } else if (method == u"stopOtherVpns") {
         const QStringList stopped = platform::stopOtherVpns();
         if (!stopped.isEmpty())
-            log(u"helper"_s, u"warning"_s, u"остановлены другие VPN: %1"_s.arg(stopped.join(u", "_s)));
+            log(u"helper"_s, u"warning"_s, QCoreApplication::translate("Helper", "stopped other VPNs: %1").arg(stopped.join(u", "_s)));
         reply(s, id, {{u"stopped"_s, QJsonArray::fromStringList(stopped)}});
     } else {
-        replyError(s, id, MethodNotFound, u"неизвестный метод"_s);
+        replyError(s, id, MethodNotFound, QCoreApplication::translate("Helper", "unknown method"));
     }
 }
 
@@ -287,11 +295,11 @@ std::optional<FieldError> Helper::connectCore(const QJsonObject &params)
         return FieldError{FieldError::UnsupportedProtocol, u"protocol"_s, {}};
     Profile p = Profile::fromJson(pj);
     if (!validProfileId(p.id))
-        return FieldError{FieldError::Format, u"id"_s, u"неверный идентификатор профиля"_s};
+        return FieldError{FieldError::Format, u"id"_s, QCoreApplication::translate("Helper", "invalid profile ID")};
     if (const auto e = validate(p))
         return e;
     if (p.insecure && !p.insecureConsent)
-        return FieldError{FieldError::Format, u"allowInsecure"_s, u"небезопасный профиль требует явного согласия"_s};
+        return FieldError{FieldError::Format, u"allowInsecure"_s, QCoreApplication::translate("Helper", "an insecure profile requires explicit consent")};
 
     CoreSettings s;
     s.mode = params.value(u"mode"_s).toString();
@@ -344,7 +352,7 @@ void Helper::startCore()
         rt.proxyPort = pickProxyPort(m_attempts > 0 || restarting ? m_proxyPort : 0);
         if (!rt.proxyPort) {
             m_wanted = false;
-            setState(u"error"_s, {{u"message"_s, u"нет свободного локального порта"_s}});
+            setState(u"error"_s, {{u"message"_s, QCoreApplication::translate("Helper", "no free local port")}});
             return;
         }
     }
@@ -360,7 +368,7 @@ void Helper::startCore()
     m_core->masker.addHost(m_profile.host);
     m_core->masker.setMaskHosts(m_maskHosts);
     for (const QString &k : m_profile.unknownParams.keys())
-        log(u"helper"_s, u"info"_s, u"неизвестный параметр ссылки: %1"_s.arg(k));
+        log(u"helper"_s, u"info"_s, QCoreApplication::translate("Helper", "unknown link parameter: %1").arg(k));
 
     setState(u"connecting"_s, {{u"profileId"_s, m_profile.id}, {u"mode"_s, m_settings.mode}, {u"attempt"_s, m_attempts}});
     m_core->start(buildCoreConfig(m_profile, m_settings, rt));
@@ -376,7 +384,7 @@ void Helper::onCoreReady()
             return;
         const QJsonObject o = QJsonDocument::fromJson(r->readAll()).object();
         if (r->error() != QNetworkReply::NoError || !o.contains(u"delay"_s)) {
-            const QString why = u"сервер не отвечает (%1). Попробуйте другой: «Серверы» → «Проверить все»"_s
+            const QString why = QCoreApplication::translate("Helper", "server does not respond (%1). Try another one: Servers → Check all")
                                     .arg(o.value(u"message"_s).toString(r->errorString()));
             log(u"helper"_s, u"warning"_s, why);
             m_core->stop();
@@ -384,7 +392,7 @@ void Helper::onCoreReady()
             return;
         }
         if (const QStringList other = platform::conflictingAdapters(); m_settings.mode == u"tun" && !other.isEmpty())
-            log(u"helper"_s, u"warning"_s, u"включён другой VPN (%1): трафик может идти мимо SuperPuperVPN"_s.arg(other.join(u", "_s)));
+            log(u"helper"_s, u"warning"_s, QCoreApplication::translate("Helper", "another VPN is on (%1): traffic may bypass SuperPuperVPN").arg(other.join(u", "_s)));
         m_stable->start();
         m_core->watchTraffic();
         setState(u"connected"_s, {{u"profileId"_s, m_profile.id}, {u"mode"_s, m_settings.mode},
@@ -401,17 +409,17 @@ void Helper::onCoreFailed(bool beforeReady, const QString &error)
     if (beforeReady && m_attempts == 0) {
         m_wanted = false;
         platform::cleanupStaleNetwork();
-        setState(u"error"_s, {{u"message"_s, error.isEmpty() ? u"ядро не запустилось"_s : error}});
+        setState(u"error"_s, {{u"message"_s, error.isEmpty() ? QCoreApplication::translate("Helper", "the core did not start") : error}});
         return;
     }
     if (m_attempts >= 5) {
         m_wanted = false;
         platform::cleanupStaleNetwork();
-        setState(u"error"_s, {{u"message"_s, u"ядро завершилось: %1"_s.arg(error)}});
+        setState(u"error"_s, {{u"message"_s, QCoreApplication::translate("Helper", "the core exited: %1").arg(error)}});
         return;
     }
     ++m_attempts;
-    log(u"helper"_s, u"warning"_s, u"ядро завершилось, попытка %1 из 5: %2"_s.arg(m_attempts).arg(error));
+    log(u"helper"_s, u"warning"_s, QCoreApplication::translate("Helper", "the core exited, attempt %1 of 5: %2").arg(m_attempts).arg(error));
     setState(u"connecting"_s, {{u"profileId"_s, m_profile.id}, {u"mode"_s, m_settings.mode}, {u"attempt"_s, m_attempts}});
     m_retry->start(1000 << (m_attempts - 1));
 }
@@ -428,11 +436,11 @@ void Helper::onNetworkChanged()
     if (!m_wanted || !m_core->isReady())
         return;
     if (m_settings.mode == u"proxy" && platform::physicalInterface() != m_iface) {
-        log(u"helper"_s, u"info"_s, u"сменился сетевой интерфейс — перезапускаю ядро"_s);
+        log(u"helper"_s, u"info"_s, QCoreApplication::translate("Helper", "the network interface changed, restarting the core"));
         startCore();
         return;
     }
-    log(u"helper"_s, u"info"_s, u"сеть изменилась — сбрасываю соединения"_s);
+    log(u"helper"_s, u"info"_s, QCoreApplication::translate("Helper", "the network changed, resetting connections"));
     QNetworkReply *r = m_core->del(u"/connections"_s);
     connect(r, &QNetworkReply::finished, r, &QObject::deleteLater);
 }
@@ -440,12 +448,12 @@ void Helper::onNetworkChanged()
 void Helper::testDelay(QLocalSocket *s, const QJsonValue &id, const QJsonObject &params)
 {
     if (m_delayJob) {
-        replyError(s, id, Busy, u"проверка задержки уже идёт"_s);
+        replyError(s, id, Busy, QCoreApplication::translate("Helper", "a latency test is already running"));
         return;
     }
     const QJsonArray arr = params.value(u"profiles"_s).toArray();
     if (arr.isEmpty() || arr.size() > 5000) {
-        replyError(s, id, InvalidParams, u"нужно от 1 до 5000 профилей"_s, u"profiles"_s);
+        replyError(s, id, InvalidParams, QCoreApplication::translate("Helper", "expected 1 to 5000 profiles"), u"profiles"_s);
         return;
     }
     QList<Profile> profiles;
@@ -454,7 +462,7 @@ void Helper::testDelay(QLocalSocket *s, const QJsonValue &id, const QJsonObject 
         auto e = rejectUnknownKeys(pj);
         Profile p = Profile::fromJson(pj);
         if (!e && !validProfileId(p.id))
-            e = FieldError{FieldError::Format, u"id"_s, u"неверный идентификатор"_s};
+            e = FieldError{FieldError::Format, u"id"_s, QCoreApplication::translate("Helper", "invalid ID")};
         if (!e)
             e = validate(p);
         if (e) {
@@ -466,7 +474,7 @@ void Helper::testDelay(QLocalSocket *s, const QJsonValue &id, const QJsonObject 
     }
     const QString url = params.value(u"url"_s).toString(kDefaultDelayUrl);
     if (!validTestUrl(url)) {
-        replyError(s, id, InvalidParams, u"ожидается https://-адрес"_s, u"url"_s);
+        replyError(s, id, InvalidParams, QCoreApplication::translate("Helper", "expected an https:// address"), u"url"_s);
         return;
     }
     QString error;
@@ -525,7 +533,7 @@ void Helper::testDelay(QLocalSocket *s, const QJsonValue &id, const QJsonObject 
             }
             QJsonObject result{{u"profileId"_s, pid}};
             if (s.isEmpty()) {
-                result[u"error"_s] = o.value(u"message"_s).toString(u"нет ответа"_s);
+                result[u"error"_s] = o.value(u"message"_s).toString(QCoreApplication::translate("Helper", "no response"));
             } else {
                 std::sort(s.begin(), s.end());
                 result[u"ms"_s] = s.at(s.size() / 2);
@@ -539,7 +547,7 @@ void Helper::testDelay(QLocalSocket *s, const QJsonValue &id, const QJsonObject 
     connect(m_test, &CoreProcess::ready, job, [next] { (*next)(); });
     connect(m_test, &CoreProcess::exited, job, [this, job, finishJob](bool, const QString &err) {
         for (const QString &pid : std::as_const(job->queue))
-            notify(job->socket, u"delay"_s, {{u"profileId"_s, pid}, {u"error"_s, err.isEmpty() ? u"ядро проверки завершилось"_s : err}});
+            notify(job->socket, u"delay"_s, {{u"profileId"_s, pid}, {u"error"_s, err.isEmpty() ? QCoreApplication::translate("Helper", "the test core exited") : err}});
         job->queue.clear();
         job->inflight = 0;
         finishJob();

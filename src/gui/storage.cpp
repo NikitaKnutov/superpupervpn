@@ -1,5 +1,6 @@
 #include "storage.h"
 
+#include <QCoreApplication>
 #include <QDateTime>
 #include <QDir>
 #include <QFile>
@@ -75,6 +76,7 @@ QJsonObject Storage::defaults()
     return {
         {u"version"_s, kSchema},
         {u"theme"_s, u"dark"_s},
+        {u"language"_s, u"en"_s},
         {u"autostart"_s, false},
         {u"connectOnStart"_s, false},
         {u"closeToTray"_s, true},
@@ -124,7 +126,7 @@ bool Storage::load(QString *error)
 
     m_key = loadOrCreateKey(dir(), &warning);
     if (m_key.size() != 32) {
-        *error = u"не удалось получить ключ шифрования"_s;
+        *error = QCoreApplication::translate("Storage", "failed to get the encryption key");
         return false;
     }
     const QString profilesPath = dir() + u"/profiles.enc"_s;
@@ -132,7 +134,7 @@ bool Storage::load(QString *error)
     if (!f.exists())
         return true;
     if (!f.open(QIODevice::ReadOnly)) {
-        *error = u"нет доступа к %1"_s.arg(profilesPath);
+        *error = QCoreApplication::translate("Storage", "no access to %1").arg(profilesPath);
         return false;
     }
     const auto plain = unseal(m_key, f.readAll());
@@ -140,7 +142,7 @@ bool Storage::load(QString *error)
     if (!plain) {
         const QString aside = profilesPath + u".unreadable-"_s + QDateTime::currentDateTime().toString(u"yyyyMMdd-HHmmss"_s);
         QFile::rename(profilesPath, aside);
-        warning = u"Не удалось расшифровать профили; файл сохранён как %1"_s.arg(QDir::toNativeSeparators(aside));
+        warning = QCoreApplication::translate("Storage", "Could not decrypt the profiles; the file was saved as %1").arg(QDir::toNativeSeparators(aside));
         return true;
     }
     const QJsonObject o = QJsonDocument::fromJson(*plain).object();
@@ -155,7 +157,7 @@ bool Storage::load(QString *error)
         saveProfiles();
     }
     if (readOnly)
-        warning = u"Данные созданы более новой версией SuperPuperVPN; изменения не будут сохранены"_s;
+        warning = QCoreApplication::translate("Storage", "The data was created by a newer SuperPuperVPN version; changes will not be saved");
     return true;
 }
 

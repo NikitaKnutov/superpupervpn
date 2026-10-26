@@ -39,7 +39,7 @@ QtObject {
     }
     function bytes(n) {
         if (n === undefined || n < 0) return "—"
-        const u = [qsTr("Б"), qsTr("КБ"), qsTr("МБ"), qsTr("ГБ"), qsTr("ТБ")]
+        const u = [qsTr("B"), qsTr("KB"), qsTr("MB"), qsTr("GB"), qsTr("TB")]
         let i = 0
         while (n >= 1024 && i < u.length - 1) { n /= 1024; i++ }
         return (i === 0 ? n : n.toFixed(1)) + " " + u[i]

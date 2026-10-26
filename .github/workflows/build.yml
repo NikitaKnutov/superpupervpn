@@ -13,7 +13,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Dependencies
-        run: dnf install -y cmake ninja-build gcc-c++ qt6-qtbase-devel qt6-qtdeclarative-devel openssl-devel libsecret-devel rpm-build systemd-rpm-macros rpmdevtools
+        run: dnf install -y cmake ninja-build gcc-c++ qt6-qtbase-devel qt6-qtdeclarative-devel qt6-qttools-devel qt6-linguist openssl-devel libsecret-devel rpm-build systemd-rpm-macros rpmdevtools
       - name: Sources
         run: |
           VERSION=$(sed -n 's/^project(superpupervpn VERSION \([0-9.]*\).*/\1/p' CMakeLists.txt)

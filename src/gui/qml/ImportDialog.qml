@@ -4,7 +4,7 @@ import QtQuick.Layouts
 
 Sheet {
     id: dlg
-    title: qsTr("Добавить сервер")
+    title: qsTr("Add server")
     property string stage: "choose"
     property var preview: ({})
     property string pendingUrl: ""
@@ -90,14 +90,14 @@ Sheet {
         RowLayout {
             spacing: Theme.grid * 1.5
             Tile {
-                text: qsTr("Из буфера обмена")
-                subtitle: qsTr("vless://, несколько ссылок или base64")
+                text: qsTr("From clipboard")
+                subtitle: qsTr("vless://, several links or base64")
                 icon.source: "qrc:/icons/ui/clipboard.svg"
                 onClicked: dlg.fromClipboard()
             }
             Tile {
-                text: qsTr("Подписка")
-                subtitle: qsTr("Ссылка https://")
+                text: qsTr("Subscription")
+                subtitle: qsTr("https:// link")
                 icon.source: "qrc:/icons/ui/link.svg"
                 onClicked: dlg.stage = "url"
             }
@@ -116,7 +116,7 @@ Sheet {
             PillButton {
                 Layout.fillWidth: true
                 accent: true
-                text: qsTr("Загрузить")
+                text: qsTr("Load")
                 enabled: urlField.text !== ""
                 onClicked: App.previewSubscription(urlField.text, false)
             }
@@ -125,7 +125,7 @@ Sheet {
         ColumnLayout {
             spacing: Theme.grid
             BusyIndicator { Layout.alignment: Qt.AlignHCenter; running: dlg.stage === "loading" }
-            Label { Layout.alignment: Qt.AlignHCenter; text: qsTr("Загружаю %1…").arg(dlg.preview.domain || ""); color: Theme.muted }
+            Label { Layout.alignment: Qt.AlignHCenter; text: qsTr("Loading %1…").arg(dlg.preview.domain || ""); color: Theme.muted }
         }
 
         ColumnLayout {
@@ -142,11 +142,11 @@ Sheet {
                     y: 14
                     width: parent.width - 28
                     spacing: 10
-                    InfoRow { name: qsTr("Источник"); value: dlg.preview.source || "" }
-                    InfoRow { name: qsTr("Адрес"); value: dlg.preview.domain || "" }
-                    InfoRow { name: qsTr("Название"); value: dlg.preview.title || "" }
-                    InfoRow { name: qsTr("Найдено"); value: String(dlg.preview.found || 0) }
-                    InfoRow { name: qsTr("Пропущено"); value: String(dlg.preview.skipped || 0) }
+                    InfoRow { name: qsTr("Source"); value: dlg.preview.source || "" }
+                    InfoRow { name: qsTr("Address"); value: dlg.preview.domain || "" }
+                    InfoRow { name: qsTr("Name"); value: dlg.preview.title || "" }
+                    InfoRow { name: qsTr("Found"); value: String(dlg.preview.found || 0) }
+                    InfoRow { name: qsTr("Skipped"); value: String(dlg.preview.skipped || 0) }
                 }
             }
             AbstractButton {
@@ -154,7 +154,7 @@ Sheet {
                 visible: (dlg.preview.skipped || 0) > 0
                 checkable: true
                 contentItem: Label {
-                    text: reasonsToggle.checked ? qsTr("Скрыть причины") : qsTr("Почему пропущено")
+                    text: reasonsToggle.checked ? qsTr("Hide reasons") : qsTr("Why skipped")
                     color: Theme.accentInk
                     font.pixelSize: Theme.sm
                 }
@@ -176,11 +176,11 @@ Sheet {
             RowLayout {
                 Layout.fillWidth: true
                 spacing: Theme.grid
-                PillButton { Layout.fillWidth: true; text: qsTr("Отмена"); onClicked: dlg.reject() }
+                PillButton { Layout.fillWidth: true; text: qsTr("Cancel"); onClicked: dlg.reject() }
                 PillButton {
                     Layout.fillWidth: true
                     accent: true
-                    text: qsTr("Добавить")
+                    text: qsTr("Add")
                     enabled: (dlg.preview.found || 0) > 0
                     onClicked: { App.confirmImport(); dlg.close() }
                 }
@@ -193,13 +193,13 @@ Sheet {
                 Layout.fillWidth: true
                 wrapMode: Text.Wrap
                 color: Theme.text
-                text: qsTr("Подписка по http:// передаётся без шифрования: её содержимое, включая ключи серверов, может увидеть и подменить любой посредник.")
+                text: qsTr("A subscription over http:// is not encrypted: anyone in between can read and change its contents, including server keys.")
             }
             RowLayout {
                 Layout.fillWidth: true
                 spacing: Theme.grid
-                PillButton { Layout.fillWidth: true; text: qsTr("Отмена"); onClicked: dlg.reject() }
-                PillButton { Layout.fillWidth: true; danger: true; text: qsTr("Всё равно загрузить"); onClicked: App.previewSubscription(dlg.pendingUrl, true, dlg.pendingName) }
+                PillButton { Layout.fillWidth: true; text: qsTr("Cancel"); onClicked: dlg.reject() }
+                PillButton { Layout.fillWidth: true; danger: true; text: qsTr("Load anyway"); onClicked: App.previewSubscription(dlg.pendingUrl, true, dlg.pendingName) }
             }
         }
 
@@ -212,7 +212,7 @@ Sheet {
                 color: Theme.error
                 text: dlg.preview.error || ""
             }
-            PillButton { Layout.fillWidth: true; text: qsTr("Закрыть"); onClicked: dlg.reject() }
+            PillButton { Layout.fillWidth: true; text: qsTr("Close"); onClicked: dlg.reject() }
         }
     }
 }

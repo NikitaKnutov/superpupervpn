@@ -9,11 +9,11 @@ Sheet {
     property bool reveal: false
     property var d: ({})
     readonly property var fields: [
-        [QT_TR_NOOP("Подписка"), "subscription"], [QT_TR_NOOP("Адрес"), "host"], [QT_TR_NOOP("Порт"), "port"],
-        [QT_TR_NOOP("ID"), "uuid"], [QT_TR_NOOP("Транспорт"), "network"], [QT_TR_NOOP("Безопасность"), "security"],
-        [QT_TR_NOOP("SNI"), "sni"], [QT_TR_NOOP("Отпечаток"), "fp"], [QT_TR_NOOP("Flow"), "flow"],
-        [QT_TR_NOOP("Шифрование"), "encryption"], [QT_TR_NOOP("Публичный ключ"), "pbk"], [QT_TR_NOOP("Short ID"), "sid"],
-        [QT_TR_NOOP("spx"), "spx"], [QT_TR_NOOP("Путь"), "path"], [QT_TR_NOOP("Host"), "hostHeader"],
+        [QT_TR_NOOP("Subscription"), "subscription"], [QT_TR_NOOP("Address"), "host"], [QT_TR_NOOP("Port"), "port"],
+        [QT_TR_NOOP("ID"), "uuid"], [QT_TR_NOOP("Transport"), "network"], [QT_TR_NOOP("Security"), "security"],
+        [QT_TR_NOOP("SNI"), "sni"], [QT_TR_NOOP("Fingerprint"), "fp"], [QT_TR_NOOP("Flow"), "flow"],
+        [QT_TR_NOOP("Encryption"), "encryption"], [QT_TR_NOOP("Public key"), "pbk"], [QT_TR_NOOP("Short ID"), "sid"],
+        [QT_TR_NOOP("spx"), "spx"], [QT_TR_NOOP("Path"), "path"], [QT_TR_NOOP("Host"), "hostHeader"],
         [QT_TR_NOOP("serviceName"), "serviceName"], [QT_TR_NOOP("mode"), "mode"], [QT_TR_NOOP("ALPN"), "alpn"]]
 
     function show(id) { profileId = id; reveal = false; reload(); open() }
@@ -31,18 +31,18 @@ Sheet {
             RowLayout {
                 Layout.fillWidth: true
                 spacing: Theme.grid
-                Field { id: nameField; Layout.fillWidth: true; Accessible.name: qsTr("Имя") }
+                Field { id: nameField; Layout.fillWidth: true; Accessible.name: qsTr("Name") }
                 PillButton {
                     implicitHeight: 46
                     accent: true
-                    text: qsTr("Сохранить")
+                    text: qsTr("Save")
                     enabled: nameField.text !== dlg.d.name
                     onClicked: { App.renameProfile(dlg.profileId, nameField.text); dlg.reload() }
                 }
             }
             Label {
                 visible: !!dlg.d.nonStandardId
-                text: qsTr("Нестандартный ID: передаётся ядру как есть")
+                text: qsTr("Non-standard ID: passed to the core as is")
                 color: Theme.connecting
                 font.pixelSize: Theme.xs
             }
@@ -62,10 +62,10 @@ Sheet {
                         Layout.fillWidth: true
                         wrapMode: Text.Wrap
                         color: Theme.error
-                        text: qsTr("Небезопасно: ссылка отключает проверку сертификата (allowInsecure). Соединение можно перехватить.")
+                        text: qsTr("Insecure: the link turns off certificate verification (allowInsecure). The connection can be intercepted.")
                     }
                     Switch {
-                        text: qsTr("Я понимаю риск, разрешить подключение")
+                        text: qsTr("I understand the risk, allow connecting")
                         checked: !!dlg.d.insecureConsent
                         onToggled: { App.setInsecureConsent(dlg.profileId, checked); dlg.reload() }
                     }
@@ -113,7 +113,7 @@ Sheet {
                 wrapMode: Text.Wrap
                 color: Theme.muted
                 font.pixelSize: Theme.xs
-                text: qsTr("Неизвестные параметры (сохранены): %1").arg((dlg.d.unknownKeys || []).join(", "))
+                text: qsTr("Unknown parameters (kept): %1").arg((dlg.d.unknownKeys || []).join(", "))
             }
 
             GridLayout {
@@ -121,24 +121,24 @@ Sheet {
                 columns: 2
                 rowSpacing: Theme.grid
                 columnSpacing: Theme.grid
-                PillButton { Layout.fillWidth: true; text: dlg.reveal ? qsTr("Скрыть ключи") : qsTr("Показать ключи"); onClicked: dlg.reveal = !dlg.reveal }
-                PillButton { Layout.fillWidth: true; text: qsTr("Дублировать"); onClicked: { App.duplicateProfile(dlg.profileId); dlg.close() } }
-                PillButton { Layout.fillWidth: true; danger: true; text: qsTr("Удалить"); onClicked: confirmDelete.open() }
-                PillButton { Layout.fillWidth: true; accent: true; text: qsTr("Готово"); onClicked: dlg.close() }
+                PillButton { Layout.fillWidth: true; text: dlg.reveal ? qsTr("Hide keys") : qsTr("Show keys"); onClicked: dlg.reveal = !dlg.reveal }
+                PillButton { Layout.fillWidth: true; text: qsTr("Duplicate"); onClicked: { App.duplicateProfile(dlg.profileId); dlg.close() } }
+                PillButton { Layout.fillWidth: true; danger: true; text: qsTr("Delete"); onClicked: confirmDelete.open() }
+                PillButton { Layout.fillWidth: true; accent: true; text: qsTr("Done"); onClicked: dlg.close() }
             }
         }
     }
 
     Sheet {
         id: confirmDelete
-        title: qsTr("Удалить сервер?")
+        title: qsTr("Delete this server?")
         contentItem: RowLayout {
             spacing: Theme.grid
-            PillButton { Layout.fillWidth: true; text: qsTr("Отмена"); onClicked: confirmDelete.close() }
+            PillButton { Layout.fillWidth: true; text: qsTr("Cancel"); onClicked: confirmDelete.close() }
             PillButton {
                 Layout.fillWidth: true
                 danger: true
-                text: qsTr("Удалить")
+                text: qsTr("Delete")
                 onClicked: { confirmDelete.close(); App.deleteProfile(dlg.profileId); dlg.close() }
             }
         }

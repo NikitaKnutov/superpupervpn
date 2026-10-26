@@ -94,7 +94,7 @@ ScrollView {
 
         Label {
             Layout.topMargin: 4
-            text: qsTr("Настройки")
+            text: qsTr("Settings")
             font.pixelSize: Theme.xl
             font.weight: Font.Bold
             color: Theme.text
@@ -107,70 +107,81 @@ ScrollView {
             text: App.warning
         }
 
-        SectionTitle { text: qsTr("Основные") }
+        SectionTitle { text: qsTr("General") }
         Group {
             Row2 {
-                Name { text: qsTr("Тема") }
+                Name { text: qsTr("Language") }
+                Combo {
+                    readonly property var keys: ["en", "ru"]
+                    // Language names stay in their own language so anyone can find theirs.
+                    model: ["English", "Русский"]
+                    currentIndex: Math.max(0, keys.indexOf(App.settings.language))
+                    onActivated: index => App.setSetting("language", keys[index])
+                }
+            }
+            Divider {}
+            Row2 {
+                Name { text: qsTr("Theme") }
                 Combo {
                     readonly property var keys: ["light", "dark"]
-                    model: [qsTr("Светлая"), qsTr("Тёмная")]
+                    model: [qsTr("Light"), qsTr("Dark")]
                     currentIndex: App.settings.theme === "light" ? 0 : 1
                     onActivated: index => App.setSetting("theme", keys[index])
                 }
             }
             Divider {}
             Row2 {
-                Name { text: qsTr("Запускать вместе с системой") }
+                Name { text: qsTr("Start with the system") }
                 Switch { checked: App.settings.autostart; onToggled: App.setSetting("autostart", checked) }
             }
             Divider {}
             Row2 {
-                Name { text: qsTr("Подключаться при запуске") }
+                Name { text: qsTr("Connect on start") }
                 Switch { checked: App.settings.connectOnStart; onToggled: App.setSetting("connectOnStart", checked) }
             }
             Divider {}
             Row2 {
                 visible: App.trayAvailable
-                Name { text: qsTr("Сворачивать в трей при закрытии окна") }
+                Name { text: qsTr("Minimize to tray when the window is closed") }
                 Switch { checked: App.settings.closeToTray; onToggled: App.setSetting("closeToTray", checked) }
             }
             Row2 {
                 visible: !App.trayAvailable
-                Name { text: qsTr("При закрытии окна") }
+                Name { text: qsTr("When the window is closed") }
                 Combo {
                     readonly property var keys: ["ask", "background", "quit"]
-                    model: [qsTr("Спрашивать"), qsTr("Работать в фоне"), qsTr("Выходить")]
+                    model: [qsTr("Ask"), qsTr("Keep running"), qsTr("Quit")]
                     currentIndex: Math.max(0, keys.indexOf(App.settings.noTrayClose))
                     onActivated: index => App.setSetting("noTrayClose", keys[index])
                 }
             }
         }
 
-        SectionTitle { text: qsTr("Подключение") }
+        SectionTitle { text: qsTr("Connection") }
         Group {
             Row2 {
-                Name { text: qsTr("Режим по умолчанию") }
+                Name { text: qsTr("Default mode") }
                 Combo {
                     readonly property var keys: ["tun", "proxy"]
-                    model: [qsTr("TUN"), qsTr("Системный прокси")]
+                    model: [qsTr("TUN"), qsTr("System proxy")]
                     currentIndex: keys.indexOf(App.settings.mode)
                     onActivated: index => App.setSetting("mode", keys[index])
                 }
             }
             Divider {}
             Row2 {
-                Name { text: qsTr("Обновлять подписки") }
+                Name { text: qsTr("Update subscriptions") }
                 Combo {
                     readonly property var hours: [0, 1, 6, 12, 24, 72, 168]
-                    model: [qsTr("Как в подписке"), qsTr("Каждый час"), qsTr("Каждые 6 ч"), qsTr("Каждые 12 ч"),
-                            qsTr("Раз в сутки"), qsTr("Раз в 3 дня"), qsTr("Раз в неделю")]
+                    model: [qsTr("As the subscription says"), qsTr("Every hour"), qsTr("Every 6 h"), qsTr("Every 12 h"),
+                            qsTr("Once a day"), qsTr("Every 3 days"), qsTr("Once a week")]
                     currentIndex: Math.max(0, hours.indexOf(App.settings.subIntervalHours))
                     onActivated: index => App.setSetting("subIntervalHours", hours[index])
                 }
             }
         }
 
-        SectionTitle { id: serviceTitle; text: qsTr("Служба") }
+        SectionTitle { id: serviceTitle; text: qsTr("Service") }
         Group {
             id: serviceGroup
             readonly property var d: App.diagnostics
@@ -182,13 +193,13 @@ ScrollView {
                     color: App.helperReady ? Theme.connected : Theme.error
                 }
                 Name {
-                    text: App.helperReady ? qsTr("Работает") : qsTr("Не запущена")
+                    text: App.helperReady ? qsTr("Running") : qsTr("Not running")
                     font.weight: Font.DemiBold
                 }
                 PillButton {
                     implicitHeight: 36
                     accent: !App.helperReady
-                    text: App.helperReady ? qsTr("Перезапустить") : qsTr("Запустить")
+                    text: App.helperReady ? qsTr("Restart") : qsTr("Start")
                     onClicked: App.startService(App.helperReady)
                 }
             }
@@ -202,32 +213,32 @@ ScrollView {
                 text: App.helperError
             }
             Divider {}
-            Row2 { Name { text: qsTr("Приложение") } Value { text: App.version } }
+            Row2 { Name { text: qsTr("App") } Value { text: App.version } }
             Divider {}
-            Row2 { Name { text: qsTr("Служба") } Value { text: serviceGroup.d.helperVersion || "—" } }
+            Row2 { Name { text: qsTr("Service") } Value { text: serviceGroup.d.helperVersion || "—" } }
             Divider {}
-            Row2 { Name { text: qsTr("Ядро") } Value { text: serviceGroup.d.coreVersion ? "mihomo " + serviceGroup.d.coreVersion : "—" } }
+            Row2 { Name { text: qsTr("Core") } Value { text: serviceGroup.d.coreVersion ? "mihomo " + serviceGroup.d.coreVersion : "—" } }
             Divider {}
             Row2 {
-                Name { text: qsTr("Внешний IP") }
-                Value { text: serviceGroup.d.externalIp || (App.state === "connected" ? qsTr("не определён") : qsTr("нет подключения")) }
+                Name { text: qsTr("External IP") }
+                Value { text: serviceGroup.d.externalIp || (App.state === "connected" ? qsTr("unknown") : qsTr("not connected")) }
             }
             Divider {}
             Row2 {
                 PillButton {
                     Layout.fillWidth: true
                     implicitHeight: 40
-                    text: qsTr("Проверить")
+                    text: qsTr("Check")
                     enabled: App.helperReady
                     onClicked: App.runDiagnostics()
                 }
             }
         }
 
-        SectionTitle { text: qsTr("Дополнительно") }
+        SectionTitle { text: qsTr("Advanced") }
         Group {
             Row2 {
-                Name { text: qsTr("Уровень логов ядра") }
+                Name { text: qsTr("Core log level") }
                 Combo {
                     model: ["silent", "error", "warning", "info", "debug"]
                     currentIndex: model.indexOf(App.settings.logLevel)
@@ -240,7 +251,7 @@ ScrollView {
                 Layout.topMargin: 12
                 Layout.bottomMargin: 12
                 spacing: 8
-                Name { text: qsTr("DoH-резолвер (через подключение)") }
+                Name { text: qsTr("DoH resolver (through the connection)") }
                 Field {
                     Layout.fillWidth: true
                     text: App.settings.dohUrl
@@ -250,7 +261,7 @@ ScrollView {
             }
             Divider {}
             Row2 {
-                Name { text: qsTr("MTU TUN (0 — по умолчанию)") }
+                Name { text: qsTr("TUN MTU (0 = default)") }
                 SpinBox {
                     from: 0
                     to: 9000
@@ -261,7 +272,7 @@ ScrollView {
             }
             Divider {}
             Row2 {
-                Name { text: qsTr("Скрывать адреса серверов в логах") }
+                Name { text: qsTr("Hide server addresses in logs") }
                 Switch { checked: App.settings.maskHosts; onToggled: App.setSetting("maskHosts", checked) }
             }
         }

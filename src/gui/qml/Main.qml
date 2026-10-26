@@ -15,10 +15,10 @@ ApplicationWindow {
     readonly property bool wide: width >= 900
     property int page: 0
     readonly property var pages: [
-        { t: qsTr("Главная"), i: "qrc:/icons/ui/home.svg" },
-        { t: qsTr("Серверы"), i: "qrc:/icons/ui/globe.svg" },
-        { t: qsTr("Логи"), i: "qrc:/icons/ui/logs.svg" },
-        { t: qsTr("Настройки"), i: "qrc:/icons/ui/settings.svg" }
+        { t: qsTr("Home"), i: "qrc:/icons/ui/home.svg" },
+        { t: qsTr("Servers"), i: "qrc:/icons/ui/globe.svg" },
+        { t: qsTr("Logs"), i: "qrc:/icons/ui/logs.svg" },
+        { t: qsTr("Settings"), i: "qrc:/icons/ui/settings.svg" }
     ]
 
     palette {
@@ -99,9 +99,9 @@ ApplicationWindow {
                 icon.color: Theme.text
                 icon.width: 22
                 icon.height: 22
-                Accessible.name: qsTr("Импорт")
+                Accessible.name: qsTr("Import")
                 ToolTip.visible: hovered
-                ToolTip.text: qsTr("Импорт")
+                ToolTip.text: qsTr("Import")
                 onClicked: importDialog.start()
                 background: Rectangle {
                     radius: width / 2
@@ -203,28 +203,28 @@ ApplicationWindow {
 
     Sheet {
         id: closeDialog
-        title: qsTr("Выйти или работать в фоне?")
+        title: qsTr("Quit or keep running in the background?")
         contentItem: ColumnLayout {
             spacing: Theme.grid * 2
             Label {
                 Layout.fillWidth: true
                 wrapMode: Text.Wrap
                 color: Theme.muted
-                text: qsTr("Значка в трее нет. В фоне подключение сохранится, а повторный запуск %1 откроет окно.").arg("SuperPuperVPN")
+                text: qsTr("There is no tray icon. In the background the connection stays up, and launching %1 again opens the window.").arg("SuperPuperVPN")
             }
-            CheckBox { id: remember; text: qsTr("Запомнить выбор") }
+            CheckBox { id: remember; text: qsTr("Remember my choice") }
             RowLayout {
                 Layout.fillWidth: true
                 spacing: Theme.grid
                 PillButton {
                     Layout.fillWidth: true
-                    text: qsTr("Выйти")
+                    text: qsTr("Quit")
                     onClicked: { if (remember.checked) App.setSetting("noTrayClose", "quit"); closeDialog.close(); App.quit() }
                 }
                 PillButton {
                     Layout.fillWidth: true
                     accent: true
-                    text: qsTr("В фоне")
+                    text: qsTr("Keep running")
                     onClicked: { if (remember.checked) App.setSetting("noTrayClose", "background"); closeDialog.close(); win.hide() }
                 }
             }
@@ -234,30 +234,30 @@ ApplicationWindow {
     Sheet {
         id: conflictDialog
         property string details: ""
-        title: qsTr("Возможен конфликт")
+        title: qsTr("Possible conflict")
         contentItem: ColumnLayout {
             spacing: Theme.grid * 2
             Label {
                 Layout.fillWidth: true
                 wrapMode: Text.Wrap
                 color: Theme.muted
-                text: qsTr("Обнаружено:\n%1\n\nЭто может помешать подключению или пустить часть трафика мимо туннеля.").arg(conflictDialog.details)
+                text: qsTr("Detected:\n%1\n\nThis may break the connection or let part of the traffic bypass the tunnel.").arg(conflictDialog.details)
             }
             PillButton {
                 Layout.fillWidth: true
                 visible: (App.diagnostics.conflictingAdapters || []).length > 0
                 accent: true
-                text: qsTr("Выключить другие VPN и подключить")
+                text: qsTr("Turn off other VPNs and connect")
                 onClicked: { conflictDialog.close(); App.stopOtherVpns(true) }
             }
             RowLayout {
                 Layout.fillWidth: true
                 spacing: Theme.grid
-                PillButton { Layout.fillWidth: true; text: qsTr("Отмена"); onClicked: conflictDialog.close() }
+                PillButton { Layout.fillWidth: true; text: qsTr("Cancel"); onClicked: conflictDialog.close() }
                 PillButton {
                     Layout.fillWidth: true
                     accent: (App.diagnostics.conflictingAdapters || []).length === 0
-                    text: qsTr("Всё равно подключить")
+                    text: qsTr("Connect anyway")
                     onClicked: { conflictDialog.close(); App.acknowledgeConflicts() }
                 }
             }
@@ -268,16 +268,16 @@ ApplicationWindow {
         id: diagDialog
         readonly property var d: App.diagnostics
         readonly property var other: d.conflictingAdapters || []
-        title: qsTr("Диагностика")
+        title: qsTr("Diagnostics")
         onOpened: App.runDiagnostics()
         contentItem: ColumnLayout {
             spacing: Theme.grid * 1.5
             Repeater {
                 model: [
-                    [qsTr("Служба"), App.helperReady ? qsTr("работает") + (diagDialog.d.helperVersion ? " · " + diagDialog.d.helperVersion : "") : qsTr("не запущена")],
-                    [qsTr("Ядро"), diagDialog.d.coreVersion ? "mihomo " + diagDialog.d.coreVersion : "—"],
-                    [qsTr("Другие VPN"), diagDialog.other.length > 0 ? diagDialog.other.join(", ") : qsTr("не найдены")],
-                    [qsTr("Внешний IP"), diagDialog.d.externalIp || (App.state === "connected" ? qsTr("не определён") : qsTr("нет подключения"))]
+                    [qsTr("Service"), App.helperReady ? qsTr("running") + (diagDialog.d.helperVersion ? " · " + diagDialog.d.helperVersion : "") : qsTr("not running")],
+                    [qsTr("Core"), diagDialog.d.coreVersion ? "mihomo " + diagDialog.d.coreVersion : "—"],
+                    [qsTr("Other VPNs"), diagDialog.other.length > 0 ? diagDialog.other.join(", ") : qsTr("none found")],
+                    [qsTr("External IP"), diagDialog.d.externalIp || (App.state === "connected" ? qsTr("unknown") : qsTr("not connected"))]
                 ]
                 RowLayout {
                     required property var modelData
@@ -300,28 +300,28 @@ ApplicationWindow {
                 wrapMode: Text.Wrap
                 color: Theme.error
                 font.pixelSize: Theme.xs
-                text: diagDialog.d.hotspot ? qsTr("Включена мобильная точка доступа Windows — она может мешать режиму TUN")
-                                          : qsTr("Включена пересылка IP (IP forwarding) — она может мешать режиму TUN")
+                text: diagDialog.d.hotspot ? qsTr("Windows Mobile Hotspot is on and may interfere with TUN mode")
+                                          : qsTr("IP forwarding is on and may interfere with TUN mode")
             }
             PillButton {
                 Layout.fillWidth: true
                 visible: !App.helperReady
                 accent: true
-                text: qsTr("Запустить службу")
+                text: qsTr("Start service")
                 onClicked: App.startService(false)
             }
             PillButton {
                 Layout.fillWidth: true
                 visible: App.helperReady && diagDialog.other.length > 0
                 accent: true
-                text: qsTr("Выключить другие VPN")
+                text: qsTr("Turn off other VPNs")
                 onClicked: App.stopOtherVpns(false)
             }
             RowLayout {
                 Layout.fillWidth: true
                 spacing: Theme.grid
-                PillButton { Layout.fillWidth: true; text: qsTr("Проверить снова"); enabled: App.helperReady; onClicked: App.runDiagnostics() }
-                PillButton { Layout.fillWidth: true; text: qsTr("Закрыть"); onClicked: diagDialog.close() }
+                PillButton { Layout.fillWidth: true; text: qsTr("Check again"); enabled: App.helperReady; onClicked: App.runDiagnostics() }
+                PillButton { Layout.fillWidth: true; text: qsTr("Close"); onClicked: diagDialog.close() }
             }
         }
     }

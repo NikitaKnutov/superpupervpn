@@ -80,7 +80,7 @@ ScrollView {
                 width: parent.width
                 spacing: Theme.grid
                 Label {
-                    text: qsTr("Служба %1 не запущена").arg("SuperPuperVPN")
+                    text: qsTr("The %1 service is not running").arg("SuperPuperVPN")
                     font.pixelSize: Theme.md
                     font.weight: Font.DemiBold
                     color: Theme.error
@@ -89,9 +89,9 @@ ScrollView {
                     Layout.fillWidth: true
                     wrapMode: Text.Wrap
                     color: Theme.muted
-                    text: App.helperError !== "" ? App.helperError : qsTr("Без службы подключение недоступно. Она нужна для TUN и запускает ядро.")
+                    text: App.helperError !== "" ? App.helperError : qsTr("You cannot connect without the service. It is needed for TUN and runs the core.")
                 }
-                PillButton { text: qsTr("Запустить службу"); accent: true; onClicked: App.startService(false) }
+                PillButton { text: qsTr("Start service"); accent: true; onClicked: App.startService(false) }
             }
         }
 
@@ -116,9 +116,9 @@ ScrollView {
                 }
                 Label {
                     anchors.verticalCenter: parent.verticalCenter
-                    text: page.st === "connected" ? qsTr("Защищено")
-                        : page.st === "connecting" ? qsTr("Подключение…")
-                        : page.st === "error" ? qsTr("Ошибка") : qsTr("Не защищено")
+                    text: page.st === "connected" ? qsTr("Protected")
+                        : page.st === "connecting" ? qsTr("Connecting…")
+                        : page.st === "error" ? qsTr("Error") : qsTr("Not protected")
                     color: page.st === "disconnected" ? Theme.muted : Theme.stateColor(page.st)
                     font.pixelSize: Theme.sm
                     font.weight: Font.DemiBold
@@ -147,7 +147,7 @@ ScrollView {
             Layout.alignment: Qt.AlignHCenter
             color: Theme.muted
             font.pixelSize: Theme.sm
-            text: page.st === "connected" || page.st === "connecting" ? qsTr("Нажмите, чтобы отключиться") : qsTr("Нажмите, чтобы подключиться")
+            text: page.st === "connected" || page.st === "connecting" ? qsTr("Click to disconnect") : qsTr("Click to connect")
         }
 
         ColumnLayout {
@@ -167,8 +167,8 @@ ScrollView {
             RowLayout {
                 Layout.alignment: Qt.AlignHCenter
                 spacing: Theme.grid
-                PillButton { text: qsTr("Повторить"); accent: true; onClicked: App.connectNow() }
-                PillButton { text: qsTr("Диагностика"); onClicked: page.openDiagnostics() }
+                PillButton { text: qsTr("Retry"); accent: true; onClicked: App.connectNow() }
+                PillButton { text: qsTr("Diagnostics"); onClicked: page.openDiagnostics() }
             }
         }
 
@@ -176,7 +176,7 @@ ScrollView {
             Layout.fillWidth: true
             Layout.leftMargin: 16
             Layout.rightMargin: 16
-            labels: [qsTr("Системный прокси"), qsTr("TUN")]
+            labels: [qsTr("System proxy"), qsTr("TUN")]
             current: App.settings.mode === "proxy" ? 0 : 1
             onPicked: index => App.setSetting("mode", index === 0 ? "proxy" : "tun")
         }
@@ -187,13 +187,13 @@ ScrollView {
             Layout.rightMargin: 16
             spacing: Theme.grid * 1.5
             StatTile {
-                label: qsTr("Загрузка")
-                value: page.st === "connected" ? Theme.bytes(App.traffic.down || 0) + qsTr("/с") : "—"
+                label: qsTr("Download")
+                value: page.st === "connected" ? Theme.bytes(App.traffic.down || 0) + qsTr("/s") : "—"
                 iconSource: "qrc:/icons/ui/down.svg"
             }
             StatTile {
-                label: qsTr("Отдача")
-                value: page.st === "connected" ? Theme.bytes(App.traffic.up || 0) + qsTr("/с") : "—"
+                label: qsTr("Upload")
+                value: page.st === "connected" ? Theme.bytes(App.traffic.up || 0) + qsTr("/s") : "—"
                 iconSource: "qrc:/icons/ui/up.svg"
             }
         }
@@ -207,7 +207,7 @@ ScrollView {
             color: serverTap.pressed ? Theme.surface2 : Theme.surface
             border.color: Theme.border
             Accessible.role: Accessible.Button
-            Accessible.name: qsTr("Сервер: %1").arg(App.current.name || qsTr("не выбран"))
+            Accessible.name: qsTr("Server: %1").arg(App.current.name || qsTr("not selected"))
             TapHandler { id: serverTap; onTapped: page.openServers() }
             RowLayout {
                 anchors.fill: parent
@@ -220,7 +220,7 @@ ScrollView {
                     spacing: 2
                     Label {
                         Layout.fillWidth: true
-                        text: App.current.name || qsTr("Выберите сервер")
+                        text: App.current.name || qsTr("Choose a server")
                         elide: Text.ElideRight
                         textFormat: Text.PlainText
                         font.pixelSize: Theme.md
@@ -228,7 +228,7 @@ ScrollView {
                         color: Theme.text
                     }
                     Label {
-                        text: App.current.badge || qsTr("Нажмите, чтобы открыть список")
+                        text: App.current.badge || qsTr("Click to open the list")
                         color: Theme.muted
                         font.pixelSize: Theme.xs
                     }
@@ -248,7 +248,7 @@ ScrollView {
         Label {
             visible: page.st === "connected"
             Layout.alignment: Qt.AlignHCenter
-            text: qsTr("За сеанс: %1").arg(Theme.bytes((App.traffic.upTotal || 0) + (App.traffic.downTotal || 0)))
+            text: qsTr("This session: %1").arg(Theme.bytes((App.traffic.upTotal || 0) + (App.traffic.downTotal || 0)))
             font.features: { "tnum": 1 }
             font.pixelSize: Theme.xs
             color: Theme.muted

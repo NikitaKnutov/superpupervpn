@@ -1,5 +1,6 @@
 #include "storage.h"
 
+#include <QCoreApplication>
 #include <QFile>
 #include <QSaveFile>
 
@@ -32,7 +33,7 @@ QByteArray randomKey()
 QByteArray loadOrCreateKey(const QString &dir, QString *warning)
 {
     const QString fallback = dir + u"/key"_s;
-    const QString fallbackWarning = u"Связка ключей недоступна: ключ шифрования хранится в файле с правами 0600"_s;
+    const QString fallbackWarning = QCoreApplication::translate("KeyStore", "The keyring is unavailable: the encryption key is stored in a file with 0600 permissions");
     if (QFile f(fallback); f.open(QIODevice::ReadOnly)) {
         *warning = fallbackWarning;
         return QByteArray::fromBase64(f.readAll());

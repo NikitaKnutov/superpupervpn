@@ -2,9 +2,12 @@
 
 #include <QColor>
 #include <QDir>
+#include <QDirIterator>
 #include <QFile>
 #include <QRegularExpression>
+#include <QSet>
 #include <QTest>
+#include <QXmlStreamReader>
 
 using namespace Qt::StringLiterals;
 
@@ -61,34 +64,69 @@ private slots:
             QVERIFY(::contrast(token("accentText", dark), token("accent", dark)) >= 4.5);
     }
 
-    void qmlStringsGoThroughQsTr()
+    // English is the source language: Russian lives only in translations/superpupervpn_ru.ts.
+    void sourcesAreEnglish()
     {
-        static const QRegularExpression literal(u"\"([^\"\\\\]|\\\\.)*\""_s);
         QStringList offenders;
-        const QDir dir(QStringLiteral(SUPERPUPERVPN_QML_DIR));
-        const QStringList files = dir.entryList({u"*.qml"_s});
-        QVERIFY(!files.isEmpty());
-        for (const QString &name : files) {
-            QFile f(dir.filePath(name));
+        QDirIterator it(QStringLiteral(SUPERPUPERVPN_SOURCE_DIR "/src"), {u"*.cpp"_s, u"*.h"_s, u"*.qml"_s},
+                        QDir::Files, QDirIterator::Subdirectories);
+        while (it.hasNext()) {
+            QFile f(it.next());
             QVERIFY(f.open(QIODevice::ReadOnly));
             int n = 0;
             while (!f.atEnd()) {
-                const QString line = QString::fromUtf8(f.readLine());
+                QString line = QString::fromUtf8(f.readLine());
                 ++n;
-                if (line.trimmed().startsWith(u"//"))
-                    continue;
-                for (auto it = literal.globalMatch(line); it.hasNext();) {
-                    const auto m = it.next();
-                    const QString lit = m.captured();
-                    const bool cyrillic = std::any_of(lit.cbegin(), lit.cend(),
-                                                      [](QChar c) { return c.script() == QChar::Script_Cyrillic; });
-                    const QString before = line.left(m.capturedStart());
-                    if (cyrillic && !before.endsWith(u"qsTr(") && !before.endsWith(u"QT_TR_NOOP("))
-                        offenders << u"%1:%2"_s.arg(name).arg(n);
-                }
+                line.remove(u"\"Русский\""_s);  // the language picker names each language in itself
+                if (std::any_of(line.cbegin(), line.cend(), [](QChar c) { return c.script() == QChar::Script_Cyrillic; }))
+                    offenders << u"%1:%2"_s.arg(it.fileName()).arg(n);
             }
         }
         QVERIFY2(offenders.isEmpty(), qPrintable(offenders.join(u", "_s)));
+    }
+
+    // Every string marked for translation has a finished Russian translation, so the .ts is not stale.
+    void russianTranslationComplete()
+    {
+        QFile ts(QStringLiteral(SUPERPUPERVPN_SOURCE_DIR "/translations/superpupervpn_ru.ts"));
+        QVERIFY(ts.open(QIODevice::ReadOnly));
+        QSet<QString> translated;
+        QStringList unfinished;
+        QXmlStreamReader xml(&ts);
+        QString source;
+        while (xml.readNextStartElement() || !xml.atEnd()) {
+            if (!xml.isStartElement())
+                continue;
+            if (xml.name() == u"source") {
+                source = xml.readElementText();
+            } else if (xml.name() == u"translation") {
+                const bool done = xml.attributes().value(u"type"_s).isEmpty();
+                if (done && !xml.readElementText().isEmpty())
+                    translated << source;
+                else
+                    unfinished << source;
+            }
+        }
+        QVERIFY(!xml.hasError());
+        QVERIFY2(unfinished.isEmpty(), qPrintable(unfinished.join(u" | "_s)));
+
+        static const QRegularExpression marked(
+            u"(?:\\bqsTr|\\btr|QT_TR_NOOP|translate\\(\"\\w+\",)\\s*\\(?\\s*\"((?:[^\"\\\\]|\\\\.)*)\""_s);
+        QStringList missing;
+        QDirIterator it(QStringLiteral(SUPERPUPERVPN_SOURCE_DIR "/src"), {u"*.cpp"_s, u"*.qml"_s}, QDir::Files,
+                        QDirIterator::Subdirectories);
+        while (it.hasNext()) {
+            QFile f(it.next());
+            QVERIFY(f.open(QIODevice::ReadOnly));
+            const QString text = QString::fromUtf8(f.readAll());
+            for (auto m = marked.globalMatch(text); m.hasNext();) {
+                QString s = m.next().captured(1);
+                s.replace(u"\\n"_s, u"\n"_s).replace(u"\\\""_s, u"\""_s).replace(u"\\\\"_s, u"\\"_s);
+                if (!translated.contains(s))
+                    missing << u"%1: %2"_s.arg(it.fileName(), s);
+            }
+        }
+        QVERIFY2(missing.isEmpty(), qPrintable(u"run the update_translations target: "_s + missing.join(u" | "_s)));
     }
 };
 

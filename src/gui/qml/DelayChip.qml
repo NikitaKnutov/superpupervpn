@@ -12,7 +12,7 @@ Row {
     Label {
         visible: root.showText
         anchors.verticalCenter: parent.verticalCenter
-        text: root.ms === -1 ? qsTr("— мс") : root.ms === -3 ? "…" : root.ms < 0 ? qsTr("нет связи") : qsTr("%1 мс").arg(root.ms)
+        text: root.ms === -1 ? qsTr("— ms") : root.ms === -3 ? "…" : root.ms < 0 ? qsTr("unreachable") : qsTr("%1 ms").arg(root.ms)
         color: root.ms === -1 || root.ms === -3 ? Theme.muted : root.tone
         font.pixelSize: Theme.xs
         font.features: { "tnum": 1 }

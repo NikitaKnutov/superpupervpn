@@ -1,5 +1,6 @@
 #include "configgen.h"
 #include "geoip.h"
+#include "i18n.h"
 #include "linkparser.h"
 #include "masking.h"
 #include "subscription.h"
@@ -92,21 +93,21 @@ private slots:
         QTest::newRow("sid zz") << reality().replace(kSid, u"zz"_s) << "sid" << "";
         QTest::newRow("encryption empty") << reality().replace(u"encryption=none"_s, u"encryption="_s) << "encryption" << "";
         QTest::newRow("flow direct") << reality().replace(u"flow=xtls-rprx-vision"_s, u"flow=xtls-rprx-direct"_s)
-                                     << "flow" << "не поддерживается ядром mihomo";
-        QTest::newRow("repeated sni") << reality(u"&sni=b.example.org"_s) << "sni" << "повторяется";
+                                     << "flow" << "not supported by the mihomo core";
+        QTest::newRow("repeated sni") << reality(u"&sni=b.example.org"_s) << "sni" << "repeated";
         QTest::newRow("grpc no serviceName") << base(u"type=grpc&security=tls"_s) << "serviceName" << "";
-        QTest::newRow("ssr") << u"ssr://abc"_s << "scheme" << "Протокол не поддерживается";
+        QTest::newRow("ssr") << u"ssr://abc"_s << "scheme" << "Protocol is not supported";
         QTest::newRow("javascript") << u"javascript:alert(1)"_s << "scheme" << "";
         QTest::newRow("file") << u"file:///etc/passwd"_s << "scheme" << "";
-        QTest::newRow("vmess") << u"vmess://eyJ2IjoyfQ=="_s << "scheme" << "Протокол не поддерживается";
-        QTest::newRow("trojan") << u"trojan://pw@example.com:443"_s << "scheme" << "Протокол не поддерживается";
-        QTest::newRow("pqv") << reality(u"&pqv=abc"_s) << "pqv" << "Параметр pqv не поддерживается ядром";
+        QTest::newRow("vmess") << u"vmess://eyJ2IjoyfQ=="_s << "scheme" << "Protocol is not supported";
+        QTest::newRow("trojan") << u"trojan://pw@example.com:443"_s << "scheme" << "Protocol is not supported";
+        QTest::newRow("pqv") << reality(u"&pqv=abc"_s) << "pqv" << "The pqv parameter is not supported by the core";
         QTest::newRow("spx path") << reality().replace(u"spx=%2F"_s, u"spx=%2Fpath"_s) << "spx"
-                                  << "Параметр spx не поддерживается ядром";
-        QTest::newRow("fm") << reality(u"&fm=%7B%7D"_s) << "fm" << "не поддерживается ядром";
-        QTest::newRow("too long") << reality(u"&x="_s + QString(9000, u'a')) << "" << "8 КБ";
+                                  << "The spx parameter is not supported by the core";
+        QTest::newRow("fm") << reality(u"&fm=%7B%7D"_s) << "fm" << "not supported by the core";
+        QTest::newRow("too long") << reality(u"&x="_s + QString(9000, u'a')) << "" << "8 KB";
         QTest::newRow("fragment control") << reality().replace(u"%201"_s, u"%07"_s) << "name" << "";
-        QTest::newRow("kcp") << base(u"type=kcp"_s) << "type" << "не поддерживается ядром mihomo";
+        QTest::newRow("kcp") << base(u"type=kcp"_s) << "type" << "not supported by the mihomo core";
         QTest::newRow("xhttp extra key") << base(u"type=xhttp&extra=%7B%22xmux%22%3A1%7D"_s) << "extra" << "";
     }
 
@@ -121,6 +122,15 @@ private slots:
         QVERIFY2(r.error->text().contains(message), qPrintable(r.error->text()));
         QVERIFY(!r.error->text().contains(kUuid));
         QVERIFY(!r.error->text().contains(kPbk));
+    }
+
+    void russianTranslation()
+    {
+        QVERIFY(setLanguage(u"ru"_s));
+        QVERIFY(parseLink(u"ssr://abc"_s).error->text().contains(u"Протокол не поддерживается"_s));
+        QVERIFY(setLanguage(u"en"_s));
+        QVERIFY(parseLink(u"ssr://abc"_s).error->text().contains(u"Protocol is not supported"_s));
+        QVERIFY(!setLanguage(u"de"_s));
     }
 
     void defaults()

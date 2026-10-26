@@ -1,5 +1,6 @@
 #include "profile.h"
 
+#include <QCoreApplication>
 #include <QCryptographicHash>
 #include <QHostAddress>
 #include <QJsonDocument>
@@ -136,14 +137,14 @@ std::optional<FieldError> rejectUnknownKeys(const QJsonObject &profileJson)
     static const QStringList known = Profile().toJson().keys();
     for (const QString &k : profileJson.keys())
         if (!known.contains(k))
-            return err(k.left(32), u"неизвестное поле"_s);
+            return err(k.left(32), QCoreApplication::translate("Profile", "unknown field"));
     return std::nullopt;
 }
 
 QString FieldError::text() const
 {
     switch (kind) {
-    case UnsupportedProtocol: return u"Протокол не поддерживается"_s;
+    case UnsupportedProtocol: return QCoreApplication::translate("Profile", "Protocol is not supported");
     case UnsupportedParam: return reason;
     case Format: break;
     }
@@ -153,118 +154,118 @@ QString FieldError::text() const
 std::optional<FieldError> validate(const Profile &p)
 {
     if (p.name.toUcs4().size() > 64)
-        return err(u"name"_s, u"длиннее 64 символов"_s);
+        return err(u"name"_s, QCoreApplication::translate("Profile", "longer than 64 characters"));
     if (hasControlChars(p.name))
-        return err(u"name"_s, u"содержит управляющие символы"_s);
+        return err(u"name"_s, QCoreApplication::translate("Profile", "contains control characters"));
 
     if (p.host.isEmpty())
-        return err(u"host"_s, u"не указан"_s);
+        return err(u"host"_s, QCoreApplication::translate("Profile", "missing"));
     if (!isHostOrIp(p.host))
-        return err(u"host"_s, u"не домен и не IP-адрес"_s);
+        return err(u"host"_s, QCoreApplication::translate("Profile", "not a domain or an IP address"));
     if (p.port < 1 || p.port > 65535)
-        return err(u"port"_s, u"должен быть от 1 до 65535"_s);
+        return err(u"port"_s, QCoreApplication::translate("Profile", "must be from 1 to 65535"));
 
     if (p.uuid.isEmpty())
-        return err(u"id"_s, u"пустой идентификатор"_s);
+        return err(u"id"_s, QCoreApplication::translate("Profile", "empty ID"));
     if (!isRfc4122Uuid(p.uuid)) {
         if (p.uuid.toUtf8().size() > 30)
-            return err(u"id"_s, u"не UUID и длиннее 30 байт"_s);
+            return err(u"id"_s, QCoreApplication::translate("Profile", "not a UUID and longer than 30 bytes"));
         if (hasControlChars(p.uuid))
-            return err(u"id"_s, u"содержит управляющие символы"_s);
+            return err(u"id"_s, QCoreApplication::translate("Profile", "contains control characters"));
     }
 
     if (p.network == u"kcp")
-        return unsupported(u"type"_s, u"Параметр type=kcp не поддерживается ядром mihomo"_s);
+        return unsupported(u"type"_s, QCoreApplication::translate("Profile", "The type=kcp parameter is not supported by the mihomo core"));
     if (!kNetworks.contains(p.network))
-        return err(u"type"_s, u"неизвестный транспорт"_s);
+        return err(u"type"_s, QCoreApplication::translate("Profile", "unknown transport"));
 
     if (p.encryption.isEmpty())
-        return err(u"encryption"_s, u"пустое значение"_s);
+        return err(u"encryption"_s, QCoreApplication::translate("Profile", "empty value"));
     if (p.encryption != u"none" && !p.encryption.startsWith(u"mlkem768x25519plus."))
-        return err(u"encryption"_s, u"допустимо none или mlkem768x25519plus.*"_s);
+        return err(u"encryption"_s, QCoreApplication::translate("Profile", "must be none or mlkem768x25519plus.*"));
 
     if (!kFlows.contains(p.flow))
-        return unsupported(u"flow"_s, u"Значение flow не поддерживается ядром mihomo"_s);
+        return unsupported(u"flow"_s, QCoreApplication::translate("Profile", "This flow value is not supported by the mihomo core"));
 
     if (p.security != u"none" && p.security != u"tls" && p.security != u"reality")
-        return err(u"security"_s, u"допустимо none, tls или reality"_s);
+        return err(u"security"_s, QCoreApplication::translate("Profile", "must be none, tls or reality"));
     if (!p.flow.isEmpty() && (p.security == u"none" || p.network != u"tcp"))
-        return err(u"flow"_s, u"Vision работает только с tls/reality и type=tcp"_s);
+        return err(u"flow"_s, QCoreApplication::translate("Profile", "Vision works only with tls/reality and type=tcp"));
 
     if (p.security != u"none") {
         if (!isHostOrIp(p.sni))
-            return err(u"sni"_s, u"не домен и не IP-адрес"_s);
+            return err(u"sni"_s, QCoreApplication::translate("Profile", "not a domain or an IP address"));
         if (!kFingerprints.contains(p.fp))
-            return err(u"fp"_s, u"недопустимый отпечаток"_s);
+            return err(u"fp"_s, QCoreApplication::translate("Profile", "invalid fingerprint"));
     }
     if (p.security == u"reality") {
         static const QRegularExpression pbkRe(u"^[A-Za-z0-9_-]{43}$"_s);
         if (p.pbk.isEmpty())
-            return err(u"pbk"_s, u"обязателен для reality"_s);
+            return err(u"pbk"_s, QCoreApplication::translate("Profile", "required for reality"));
         if (!pbkRe.match(p.pbk).hasMatch())
-            return err(u"pbk"_s, u"не ключ x25519 в base64url"_s);
+            return err(u"pbk"_s, QCoreApplication::translate("Profile", "not an x25519 key in base64url"));
         static const QRegularExpression sidRe(u"^([0-9a-f]{2}){0,8}$"_s);
         if (!sidRe.match(p.sid).hasMatch())
-            return err(u"sid"_s, u"ожидается hex чётной длины, до 16 символов"_s);
+            return err(u"sid"_s, QCoreApplication::translate("Profile", "expected hex of even length, up to 16 characters"));
     }
 
     if (!p.spx.isEmpty() && p.spx != u"/")
-        return unsupported(u"spx"_s, u"Параметр spx не поддерживается ядром"_s);
+        return unsupported(u"spx"_s, QCoreApplication::translate("Profile", "The spx parameter is not supported by the core"));
 
     if (!p.alpn.isEmpty()) {
         for (const QString &a : p.alpn.split(u','))
             if (a.isEmpty() || a.contains(QRegularExpression(u"\\s"_s)))
-                return err(u"alpn"_s, u"список через запятую без пробелов"_s);
+                return err(u"alpn"_s, QCoreApplication::translate("Profile", "a comma-separated list without spaces"));
     }
 
     const bool pathTransport = p.network == u"ws" || p.network == u"httpupgrade" || p.network == u"xhttp";
     if (pathTransport && !p.path.startsWith(u'/'))
-        return err(u"path"_s, u"должен начинаться с /"_s);
+        return err(u"path"_s, QCoreApplication::translate("Profile", "must start with /"));
     if (hasControlChars(p.path) || hasControlChars(p.hostHeader) || hasControlChars(p.serviceName))
-        return err(u"path"_s, u"содержит управляющие символы"_s);
+        return err(u"path"_s, QCoreApplication::translate("Profile", "contains control characters"));
     if (!p.hostHeader.isEmpty() && !isHostOrIp(p.hostHeader))
-        return err(u"host"_s, u"не домен и не IP-адрес"_s);
+        return err(u"host"_s, QCoreApplication::translate("Profile", "not a domain or an IP address"));
 
     if (p.network == u"grpc") {
         if (p.serviceName.isEmpty())
-            return err(u"serviceName"_s, u"обязателен для grpc"_s);
+            return err(u"serviceName"_s, QCoreApplication::translate("Profile", "required for grpc"));
         if (!kGrpcModes.contains(p.mode))
-            return err(u"mode"_s, u"для grpc допустимо gun, multi или guna"_s);
+            return err(u"mode"_s, QCoreApplication::translate("Profile", "for grpc must be gun, multi or guna"));
     }
     if (p.network == u"xhttp" && !kXhttpModes.contains(p.mode))
-        return err(u"mode"_s, u"для xhttp допустимо auto, packet-up, stream-up или stream-one"_s);
+        return err(u"mode"_s, QCoreApplication::translate("Profile", "for xhttp must be auto, packet-up, stream-up or stream-one"));
 
     if (!p.extra.isEmpty()) {
         if (p.network != u"xhttp")
-            return err(u"extra"_s, u"допустим только для xhttp"_s);
+            return err(u"extra"_s, QCoreApplication::translate("Profile", "allowed only for xhttp"));
         if (p.extra.toUtf8().size() > 4096)
-            return err(u"extra"_s, u"больше 4 КБ"_s);
+            return err(u"extra"_s, QCoreApplication::translate("Profile", "larger than 4 KB"));
         const QJsonDocument doc = QJsonDocument::fromJson(p.extra.toUtf8());
         if (!doc.isObject())
-            return err(u"extra"_s, u"не JSON-объект"_s);
+            return err(u"extra"_s, QCoreApplication::translate("Profile", "not a JSON object"));
         const QJsonObject o = doc.object();
         for (auto it = o.begin(); it != o.end(); ++it)
             if (!kXhttpExtraKeys.contains(it.key()))
-                return unsupported(u"extra"_s, u"Ключ extra.%1 не поддерживается"_s.arg(it.key().left(32)));
+                return unsupported(u"extra"_s, QCoreApplication::translate("Profile", "The extra.%1 key is not supported").arg(it.key().left(32)));
         const QJsonValue headers = o.value(u"headers"_s);
         if (!headers.isUndefined()) {
             if (!headers.isObject())
-                return err(u"extra"_s, u"headers должен быть объектом"_s);
+                return err(u"extra"_s, QCoreApplication::translate("Profile", "headers must be an object"));
             for (const QJsonValue v : headers.toObject())
                 if (!v.isString() || hasControlChars(v.toString()))
-                    return err(u"extra"_s, u"значения headers должны быть строками"_s);
+                    return err(u"extra"_s, QCoreApplication::translate("Profile", "headers values must be strings"));
         }
     }
 
     if (!p.ech.isEmpty()) {
         static const QRegularExpression b64(u"^[A-Za-z0-9+/]+={0,2}$"_s);
         if (p.ech.size() > 4096 || !b64.match(p.ech).hasMatch())
-            return unsupported(u"ech"_s, u"Формат параметра ech не поддерживается"_s);
+            return unsupported(u"ech"_s, QCoreApplication::translate("Profile", "This ech parameter format is not supported"));
     }
     if (!p.pcs.isEmpty() && !QRegularExpression(u"^[0-9a-fA-F]{64}$"_s).match(p.pcs).hasMatch())
-        return err(u"pcs"_s, u"ожидается hex SHA-256"_s);
+        return err(u"pcs"_s, QCoreApplication::translate("Profile", "expected a hex SHA-256"));
     if (!p.vcn.isEmpty())
-        return unsupported(u"vcn"_s, u"Параметр vcn не поддерживается"_s);
+        return unsupported(u"vcn"_s, QCoreApplication::translate("Profile", "The vcn parameter is not supported"));
 
     return std::nullopt;
 }

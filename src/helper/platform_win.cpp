@@ -49,11 +49,11 @@ bool onlyAdminsCan(const QString &path, ACCESS_MASK rights, QString *who)
         return false;
     std::unique_ptr<void, decltype(&LocalFree)> guard(sd, &LocalFree);
     if (!trustedSid(owner)) {
-        *who = u"владелец"_s;
+        *who = QCoreApplication::translate("Platform", "owner");
         return false;
     }
     if (!dacl) {
-        *who = u"все"_s;
+        *who = QCoreApplication::translate("Platform", "everyone");
         return false;
     }
     for (DWORD i = 0; i < dacl->AceCount; ++i) {
@@ -63,7 +63,7 @@ bool onlyAdminsCan(const QString &path, ACCESS_MASK rights, QString *who)
             continue;
         auto *ace = reinterpret_cast<ACCESS_ALLOWED_ACE *>(h);
         if ((ace->Mask & (rights | GENERIC_ALL | GENERIC_WRITE)) && !trustedSid(&ace->SidStart)) {
-            *who = u"обычные пользователи"_s;
+            *who = QCoreApplication::translate("Platform", "regular users");
             return false;
         }
     }
@@ -126,12 +126,12 @@ bool ensurePrivateDir(const QString &path, QString *error)
     for (const QString &dir : parts) {
         const auto native = reinterpret_cast<LPCWSTR>(QDir::toNativeSeparators(dir).utf16());
         if (!CreateDirectoryW(native, &sa) && GetLastError() != ERROR_ALREADY_EXISTS) {
-            *error = u"не удалось создать %1"_s.arg(dir);
+            *error = QCoreApplication::translate("Platform", "failed to create %1").arg(dir);
             return false;
         }
         QString who;
         if (!onlyAdminsCan(dir, FILE_WRITE_DATA | FILE_APPEND_DATA | DELETE | WRITE_DAC | WRITE_OWNER, &who)) {
-            *error = u"%1: запись разрешена (%2)"_s.arg(dir, who);
+            *error = QCoreApplication::translate("Platform", "%1: write access allowed (%2)").arg(dir, who);
             return false;
         }
     }
@@ -142,19 +142,19 @@ bool coreBinaryTrusted(const QString &path, QString *error)
 {
     const QFileInfo fi(path);
     if (!fi.isFile()) {
-        *error = u"ядро не найдено: %1"_s.arg(path);
+        *error = QCoreApplication::translate("Platform", "core not found: %1").arg(path);
         return false;
     }
     QString who;
     if (!onlyAdminsCan(fi.absoluteFilePath(), FILE_WRITE_DATA | FILE_APPEND_DATA | DELETE | WRITE_DAC | WRITE_OWNER, &who)) {
-        *error = u"файл ядра доступен на запись (%1)"_s.arg(who);
+        *error = QCoreApplication::translate("Platform", "the core file is writable (%1)").arg(who);
         return false;
     }
     QDir dir = fi.dir();
     ACCESS_MASK rights = FILE_WRITE_DATA | FILE_APPEND_DATA | FILE_DELETE_CHILD | DELETE | WRITE_DAC | WRITE_OWNER;
     for (;;) {
         if (!onlyAdminsCan(dir.absolutePath(), rights, &who)) {
-            *error = u"папка %1 доступна на запись (%2)"_s.arg(QDir::toNativeSeparators(dir.absolutePath()), who);
+            *error = QCoreApplication::translate("Platform", "folder %1 is writable (%2)").arg(QDir::toNativeSeparators(dir.absolutePath()), who);
             return false;
         }
         if (!dir.cdUp())
@@ -299,7 +299,7 @@ bool HelperServer::listen(QString *error)
 {
     listenNext();
     if (!m_pipe)
-        *error = u"не удалось создать канал \\\\.\\pipe\\superpupervpn-helper"_s;
+        *error = QCoreApplication::translate("Platform", "failed to create the pipe \\\\.\\pipe\\superpupervpn-helper");
     return m_pipe != nullptr;
 }
 

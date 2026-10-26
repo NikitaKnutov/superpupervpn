@@ -15,6 +15,8 @@ BuildRequires:  ninja-build
 BuildRequires:  gcc-c++
 BuildRequires:  qt6-qtbase-devel >= 6.8
 BuildRequires:  qt6-qtdeclarative-devel
+BuildRequires:  qt6-qttools-devel
+BuildRequires:  qt6-linguist
 BuildRequires:  openssl-devel
 BuildRequires:  libsecret-devel
 BuildRequires:  systemd-rpm-macros

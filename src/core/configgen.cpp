@@ -1,5 +1,6 @@
 #include "configgen.h"
 
+#include <QCoreApplication>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QSet>
@@ -69,15 +70,15 @@ CoreSettings CoreSettings::fromJson(const QJsonObject &o)
 std::optional<FieldError> validate(const CoreSettings &s)
 {
     if (s.mode != u"tun" && s.mode != u"proxy")
-        return FieldError{FieldError::Format, u"mode"_s, u"допустимо tun или proxy"_s};
+        return FieldError{FieldError::Format, u"mode"_s, QCoreApplication::translate("ConfigGen", "must be tun or proxy")};
     const QUrl doh(s.dohUrl, QUrl::StrictMode);
     if (s.dohUrl.size() > 256 || !doh.isValid() || doh.scheme() != u"https" || doh.host().isEmpty()
         || !doh.userInfo().isEmpty() || s.dohUrl.contains(u' '))
-        return FieldError{FieldError::Format, u"dns"_s, u"ожидается https://-адрес DoH"_s};
+        return FieldError{FieldError::Format, u"dns"_s, QCoreApplication::translate("ConfigGen", "expected an https:// DoH address")};
     if (s.tunMtu != 0 && (s.tunMtu < 1280 || s.tunMtu > 9000))
-        return FieldError{FieldError::Format, u"mtu"_s, u"от 1280 до 9000"_s};
+        return FieldError{FieldError::Format, u"mtu"_s, QCoreApplication::translate("ConfigGen", "must be from 1280 to 9000")};
     if (!QSet<QString>{u"silent"_s, u"error"_s, u"warning"_s, u"info"_s, u"debug"_s}.contains(s.logLevel))
-        return FieldError{FieldError::Format, u"logLevel"_s, u"неизвестный уровень"_s};
+        return FieldError{FieldError::Format, u"logLevel"_s, QCoreApplication::translate("ConfigGen", "unknown level")};
     return std::nullopt;
 }
 

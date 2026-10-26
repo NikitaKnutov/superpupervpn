@@ -2,6 +2,7 @@
 
 #include "platform.h"
 
+#include <QCoreApplication>
 #include <QCryptographicHash>
 #include <QFile>
 #include <QFileInfo>
@@ -35,14 +36,14 @@ bool verifyCore(QString *error)
         qWarning("core SHA-256 is not pinned (SUPERPUPERVPN_DEV build), skipping the check");
         return true;
 #else
-        *error = u"сборка без закреплённого хеша ядра"_s;
+        *error = QCoreApplication::translate("CoreProcess", "this build has no pinned core hash");
         return false;
 #endif
     }
     QFile f(path);
     QCryptographicHash h(QCryptographicHash::Sha256);
     if (!f.open(QIODevice::ReadOnly) || !h.addData(&f) || h.result().toHex() != pinned) {
-        *error = u"хеш ядра не совпадает с закреплённым — файл подменён или повреждён"_s;
+        *error = QCoreApplication::translate("CoreProcess", "the core hash does not match the pinned one: the file was replaced or is damaged");
         return false;
     }
     return true;
@@ -123,7 +124,7 @@ void CoreProcess::start(const QJsonObject &config)
         m_expected << p[u"name"_s].toString();
     m_proc->start(platform::coreBinary(), {u"-d"_s, platform::dataDir(), u"-f"_s, u"-"_s});
     if (!m_proc->waitForStarted(5000)) {
-        m_lastError = u"не удалось запустить ядро: %1"_s.arg(m_proc->errorString());
+        m_lastError = QCoreApplication::translate("CoreProcess", "failed to start the core: %1").arg(m_proc->errorString());
         return;
     }
     m_proc->write(QJsonDocument(config).toJson(QJsonDocument::Compact));
@@ -180,7 +181,7 @@ void CoreProcess::probe()
     if (!isRunning() || m_ready)
         return;
     if (++m_probes > 60) {
-        m_lastError = u"ядро не ответило за 15 с"_s;
+        m_lastError = QCoreApplication::translate("CoreProcess", "the core did not respond within 15 s");
         m_probe->stop();
         m_proc->kill();
         return;

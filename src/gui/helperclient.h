@@ -19,6 +19,7 @@ public:
     void call(const QString &method, const QJsonObject &params = {}, Callback cb = {});
     bool isReady() const { return m_ready; }
     QJsonObject hello() const { return m_hello; }
+    void setLanguage(const QString &language);
 
 signals:
     void readyChanged(bool ready);
@@ -38,6 +39,7 @@ private:
     int m_nextId = 1;
     bool m_ready = false;
     QJsonObject m_hello;
+    QString m_language;
 };
 
 }

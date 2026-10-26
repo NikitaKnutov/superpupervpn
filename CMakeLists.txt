@@ -10,7 +10,7 @@ option(SUPERPUPERVPN_DEV "Developer build: env overrides for paths/socket, unpin
 set(SUPERPUPERVPN_CORE_SHA256 "" CACHE STRING "SHA-256 of the pinned mihomo binary, baked into the helper (НФТ-БЕЗ-05)")
 set(SUPERPUPERVPN_GITHUB_REPO "NikitaKnutov/superpupervpn" CACHE STRING "owner/repo checked for new releases (ФТ-35)")
 
-set(RL_QT_COMPONENTS Core Network Test)
+set(RL_QT_COMPONENTS Core Network Test LinguistTools)
 if(SUPERPUPERVPN_BUILD_GUI)
     list(APPEND RL_QT_COMPONENTS Gui Qml Quick QuickControls2 Widgets)
 endif()
@@ -48,3 +48,17 @@ endif()
 
 enable_testing()
 add_subdirectory(tests)
+
+# English is the source language; the Russian .qm is embedded into both binaries as :/i18n/superpupervpn_ru.qm.
+# After changing strings: cmake --build build --target update_translations
+set(RL_TR_TARGETS superpupervpn-helper)
+if(SUPERPUPERVPN_BUILD_GUI)
+    list(APPEND RL_TR_TARGETS superpupervpn)
+endif()
+# The other platform's files are not part of any target here, but their strings still belong in the .ts.
+file(GLOB RL_TR_PLATFORM_SOURCES CONFIGURE_DEPENDS src/*/*_win.cpp src/*/*_linux.cpp)
+qt_add_translations(TARGETS ${RL_TR_TARGETS} tst_core
+    SOURCE_TARGETS libcore ${RL_TR_TARGETS}
+    SOURCES ${RL_TR_PLATFORM_SOURCES}
+    TS_FILES translations/superpupervpn_ru.ts
+    LUPDATE_OPTIONS -no-obsolete -locations relative)

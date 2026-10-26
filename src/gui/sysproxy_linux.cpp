@@ -1,5 +1,6 @@
 #include "sysproxy.h"
 
+#include <QCoreApplication>
 #include <QDir>
 #include <QFile>
 #include <QProcess>
@@ -87,7 +88,7 @@ bool set(int port, QString *error)
         bool m = false;
         run(u"gsettings"_s, {u"set"_s, u"org.gnome.system.proxy"_s, u"mode"_s, u"manual"_s}, &m);
         if (!ok || !m) {
-            *error = u"gsettings не принял настройки прокси"_s;
+            *error = QCoreApplication::translate("SysProxy", "gsettings rejected the proxy settings");
             return false;
         }
     }
@@ -102,7 +103,7 @@ bool set(int port, QString *error)
         kdeReparse();
     }
     if (!hasGsettings() && !isKde()) {
-        *error = u"не найдено ни gsettings, ни KDE: настройте прокси вручную"_s;
+        *error = QCoreApplication::translate("SysProxy", "neither gsettings nor KDE found: set the proxy manually");
         return false;
     }
     return true;
@@ -131,7 +132,7 @@ bool restore(const QJsonObject &snapshot, QString *error)
         kdeReparse();
     }
     if (!ok)
-        *error = u"не удалось вернуть прежние настройки прокси"_s;
+        *error = QCoreApplication::translate("SysProxy", "failed to restore the previous proxy settings");
     return ok;
 }
 

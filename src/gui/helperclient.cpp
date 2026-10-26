@@ -2,6 +2,7 @@
 
 #include "protocol.h"
 
+#include <QCoreApplication>
 #include <QJsonDocument>
 #include <QLocalSocket>
 #include <QTimer>
@@ -38,12 +39,19 @@ void HelperClient::call(const QString &method, const QJsonObject &params, Callba
     const int id = m_nextId++;
     if (m_socket->state() != QLocalSocket::ConnectedState) {
         if (cb)
-            cb({}, {{u"code"_s, -1}, {u"message"_s, u"Служба недоступна"_s}});
+            cb({}, {{u"code"_s, -1}, {u"message"_s, QCoreApplication::translate("HelperClient", "The service is unavailable")}});
         return;
     }
     if (cb)
         m_pending.insert(id, std::move(cb));
     m_socket->write(ipc::encode({{u"jsonrpc"_s, u"2.0"_s}, {u"id"_s, id}, {u"method"_s, method}, {u"params"_s, params}}));
+}
+
+void HelperClient::setLanguage(const QString &language)
+{
+    m_language = language;
+    if (m_ready)
+        call(u"setLanguage"_s, {{u"language"_s, language}});
 }
 
 void HelperClient::onConnected()
@@ -58,6 +66,7 @@ void HelperClient::onConnected()
                  return;
              }
              m_hello = r;
+             call(u"setLanguage"_s, {{u"language"_s, m_language}});
              call(u"subscribe"_s, {}, [this](const QJsonObject &r, const QJsonObject &e) {
                  if (!e.isEmpty())
                      return;
@@ -94,7 +103,7 @@ void HelperClient::setReady(bool ready)
     if (!ready) {
         const auto pending = std::exchange(m_pending, {});
         for (const Callback &cb : pending)
-            cb({}, {{u"code"_s, -1}, {u"message"_s, u"Служба недоступна"_s}});
+            cb({}, {{u"code"_s, -1}, {u"message"_s, QCoreApplication::translate("HelperClient", "The service is unavailable")}});
     }
     if (m_ready == ready)
         return;

@@ -51,18 +51,18 @@ Popup {
             clip: true
             Slide {
                 iconSource: "qrc:/icons/ui/shield.svg"
-                title: qsTr("Два режима")
-                body: qsTr("«Системный прокси» направляет через сервер браузеры и программы, которые его учитывают.\n\n«TUN» пропускает через сервер весь трафик компьютера, включая игры и терминал.")
+                title: qsTr("Two modes")
+                body: qsTr("“System proxy” sends browsers and apps that respect it through the server.\n\n“TUN” sends all traffic of the computer through the server, including games and the terminal.")
             }
             Slide {
                 iconSource: "qrc:/icons/ui/settings.svg"
-                title: qsTr("Служба")
-                body: qsTr("Для режима TUN нужна служба %1: она создаёт сетевой интерфейс и управляет ядром. Права администратора понадобились один раз — при установке.").arg("SuperPuperVPN")
+                title: qsTr("Service")
+                body: qsTr("TUN mode needs the %1 service: it creates the network interface and manages the core. Administrator rights were needed only once, during installation.").arg("SuperPuperVPN")
             }
             Slide {
                 iconSource: "qrc:/icons/ui/plus.svg"
-                title: qsTr("Добавьте сервер")
-                body: qsTr("Скопируйте ссылку vless:// или адрес подписки и нажмите «Импортировать». Подключение — одной большой кнопкой.")
+                title: qsTr("Add a server")
+                body: qsTr("Copy a vless:// link or a subscription URL and press “Import”. Then connect with one big button.")
             }
         }
         Row {
@@ -83,18 +83,18 @@ Popup {
         RowLayout {
             Layout.fillWidth: true
             spacing: Theme.grid
-            PillButton { text: qsTr("Пропустить"); onClicked: pop.finish() }
+            PillButton { text: qsTr("Skip"); onClicked: pop.finish() }
             Item { Layout.fillWidth: true }
             PillButton {
                 visible: view.currentIndex < view.count - 1
                 accent: true
-                text: qsTr("Далее")
+                text: qsTr("Next")
                 onClicked: view.incrementCurrentIndex()
             }
             PillButton {
                 visible: view.currentIndex === view.count - 1
                 accent: true
-                text: qsTr("Импортировать")
+                text: qsTr("Import")
                 onClicked: { pop.finish(); pop.importRequested() }
             }
         }

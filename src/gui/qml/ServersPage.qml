@@ -15,7 +15,7 @@ ColumnLayout {
         Layout.topMargin: 4
         Label {
             Layout.fillWidth: true
-            text: qsTr("Серверы")
+            text: qsTr("Servers")
             font.pixelSize: Theme.xl
             font.weight: Font.Bold
             color: Theme.text
@@ -23,7 +23,7 @@ ColumnLayout {
         PillButton {
             accent: true
             implicitHeight: 38
-            text: App.testing ? qsTr("Проверяю…") : qsTr("Проверить все")
+            text: App.testing ? qsTr("Checking…") : qsTr("Check all")
             enabled: !App.testing && App.helperReady && list.count > 0
             onClicked: App.testAll()
         }
@@ -34,10 +34,10 @@ ColumnLayout {
         Layout.leftMargin: 16
         Layout.rightMargin: 16
         iconSource: "qrc:/icons/ui/search.svg"
-        placeholderText: qsTr("Поиск по названию или адресу")
+        placeholderText: qsTr("Search by name or address")
         text: App.search
         onTextEdited: App.search = text
-        Accessible.name: qsTr("Поиск серверов")
+        Accessible.name: qsTr("Search servers")
     }
 
     Segmented {
@@ -45,7 +45,7 @@ ColumnLayout {
         Layout.leftMargin: 16
         Layout.rightMargin: 16
         implicitHeight: 40
-        labels: [qsTr("По имени"), qsTr("По задержке")]
+        labels: [qsTr("By name"), qsTr("By latency")]
         current: App.sortMode === "delay" ? 1 : 0
         onPicked: index => App.sortMode = index === 1 ? "delay" : "name"
     }
@@ -88,7 +88,7 @@ ColumnLayout {
                 Layout.fillWidth: true
                 horizontalAlignment: Text.AlignHCenter
                 wrapMode: Text.Wrap
-                text: App.search !== "" ? qsTr("Ничего не найдено") : qsTr("Серверов пока нет")
+                text: App.search !== "" ? qsTr("Nothing found") : qsTr("No servers yet")
                 font.pixelSize: Theme.md
                 font.weight: Font.DemiBold
                 color: Theme.text
@@ -97,7 +97,7 @@ ColumnLayout {
                 Layout.alignment: Qt.AlignHCenter
                 visible: App.search === ""
                 accent: true
-                text: qsTr("Импортировать")
+                text: qsTr("Import")
                 onClicked: page.importRequested()
             }
         }
@@ -120,7 +120,7 @@ ColumnLayout {
                     AbstractButton {
                         Layout.fillWidth: true
                         implicitHeight: 32
-                        Accessible.name: m.collapsed ? qsTr("Развернуть") : qsTr("Свернуть")
+                        Accessible.name: m.collapsed ? qsTr("Expand") : qsTr("Collapse")
                         onClicked: App.toggleGroup(m.groupId)
                         contentItem: RowLayout {
                             spacing: 6
@@ -153,7 +153,7 @@ ColumnLayout {
                         leftPadding: 12
                         rightPadding: 12
                         font.pixelSize: Theme.xs
-                        text: m.subUpdating ? qsTr("Обновляю…") : qsTr("Обновить")
+                        text: m.subUpdating ? qsTr("Updating…") : qsTr("Update")
                         enabled: !m.subUpdating
                         onClicked: App.refreshSubscription(m.groupId)
                     }
@@ -164,11 +164,11 @@ ColumnLayout {
                         leftPadding: 0
                         rightPadding: 0
                         text: "⋯"
-                        Accessible.name: qsTr("Действия с подпиской")
+                        Accessible.name: qsTr("Subscription actions")
                         onClicked: subMenu.open()
                         Menu {
                             id: subMenu
-                            MenuItem { text: qsTr("Удалить подписку"); onTriggered: App.removeSubscription(m.groupId) }
+                            MenuItem { text: qsTr("Delete subscription"); onTriggered: App.removeSubscription(m.groupId) }
                         }
                     }
                 }
@@ -189,9 +189,9 @@ ColumnLayout {
                     visible: m.isSubscription && (m.total > 0 || m.expireDays >= 0)
                     color: Theme.muted
                     font.pixelSize: Theme.xs
-                    text: (m.total > 0 ? Theme.bytes(m.used) + qsTr(" из ") + Theme.bytes(m.total) : "")
+                    text: (m.total > 0 ? Theme.bytes(m.used) + qsTr(" of ") + Theme.bytes(m.total) : "")
                         + (m.total > 0 && m.expireDays >= 0 ? "  ·  " : "")
-                        + (m.expireDays >= 0 ? qsTr("осталось %1 дн.").arg(m.expireDays) : "")
+                        + (m.expireDays >= 0 ? qsTr("%1 days left").arg(m.expireDays) : "")
                 }
                 Label {
                     visible: m.isSubscription && m.subError !== ""
@@ -237,7 +237,7 @@ ColumnLayout {
                         font.weight: Font.DemiBold
                     }
                     Label {
-                        text: row.m.badge + (row.m.insecure ? qsTr(" · небезопасно") : "") + (row.m.nonStandard ? qsTr(" · нестандартный ID") : "")
+                        text: row.m.badge + (row.m.insecure ? qsTr(" · insecure") : "") + (row.m.nonStandard ? qsTr(" · non-standard ID") : "")
                         color: row.m.insecure ? Theme.error : Theme.muted
                         font.pixelSize: Theme.xs
                     }
@@ -249,7 +249,7 @@ ColumnLayout {
                     text: row.m.pinned ? "★" : "☆"
                     font.pixelSize: Theme.lg
                     palette.buttonText: row.m.pinned ? Theme.accentInk : Theme.muted
-                    Accessible.name: row.m.pinned ? qsTr("Открепить") : qsTr("Закрепить")
+                    Accessible.name: row.m.pinned ? qsTr("Unpin") : qsTr("Pin")
                     onClicked: App.togglePin(row.m.profileId)
                     background: null
                 }
@@ -260,7 +260,7 @@ ColumnLayout {
                     icon.color: Theme.muted
                     icon.width: 18
                     icon.height: 18
-                    Accessible.name: qsTr("Карточка профиля")
+                    Accessible.name: qsTr("Profile details")
                     onClicked: page.openProfile(row.m.profileId)
                     background: null
                 }

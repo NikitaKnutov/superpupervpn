@@ -94,7 +94,7 @@ QVariant ProfileModel::data(const QModelIndex &index, int role) const
         const QJsonObject sub = m_app->subscription(r.groupId);
         const QJsonObject info = sub.value(u"info"_s).toObject();
         switch (role) {
-        case GroupNameRole: return r.groupId.isEmpty() ? tr("Мои серверы") : sub.value(u"name"_s).toString();
+        case GroupNameRole: return r.groupId.isEmpty() ? tr("My servers") : sub.value(u"name"_s).toString();
         case CollapsedRole: {
             const QJsonArray c = st.settings.value(u"collapsedGroups"_s).toArray();
             return c.contains(r.groupId.isEmpty() ? u"mine"_s : r.groupId);

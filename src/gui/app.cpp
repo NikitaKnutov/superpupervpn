@@ -2,6 +2,7 @@
 
 #include "configgen.h"
 #include "helperclient.h"
+#include "i18n.h"
 #include "linkparser.h"
 #include "platformgui.h"
 #include "subscription.h"
@@ -76,6 +77,10 @@ App::App(Storage *storage, bool startHidden, QObject *parent)
         m_geo = GeoIp(geo.readAll());
     s_instance = this;
     m_reduceMotion = gui::reduceMotion();
+    QString language = m_storage->settings.value(u"language"_s).toString();
+    if (!setLanguage(language))
+        setLanguage(language = u"en"_s);
+    m_helper->setLanguage(language);
     connect(m_helper, &HelperClient::readyChanged, this, [this](bool ready) {
         emit helperChanged();
         if (ready) {
@@ -101,7 +106,7 @@ App::App(Storage *storage, bool startHidden, QObject *parent)
             const QString msg = m_masker.mask(p.value(u"msg"_s).toString());
             (p.value(u"source"_s) == u"core"_s ? m_coreLogs : m_appLogs)
                 ->append(p.value(u"time"_s).toInteger(QDateTime::currentMSecsSinceEpoch()), p.value(u"level"_s).toString(),
-                         p.value(u"source"_s) == u"core"_s ? msg : tr("служба: ") + msg);
+                         p.value(u"source"_s) == u"core"_s ? msg : tr("service: ") + msg);
         } else if (method == u"delay") {
             m_delays.insert(p.value(u"profileId"_s).toString(), p.contains(u"ms"_s) ? p.value(u"ms"_s).toInt() : -2);
             delaysChanged();
@@ -111,8 +116,8 @@ App::App(Storage *storage, bool startHidden, QObject *parent)
     m_proxyGuard->setInterval(5000);
     connect(m_proxyGuard, &QTimer::timeout, this, [this] {
         if (m_state == u"connected" && m_proxyApplied && !SystemProxy::pointsTo(m_proxyPort)) {
-            emit toast(tr("Настройки прокси изменило другое приложение — восстановлены"));
-            appLog(u"warning"_s, u"системный прокси перезаписан другим приложением"_s);
+            emit toast(tr("Another app changed the proxy settings; they have been restored"));
+            appLog(u"warning"_s, tr("the system proxy was overwritten by another app"));
             applySystemProxy();
         }
     });
@@ -165,13 +170,13 @@ void App::handleArgs(const QStringList &args)
             m_pendingProfiles = r.profiles;
             m_pendingSubscription = {};
             emit showWindowRequested();
-            emit importPreviewReady(previewOf(tr("Ссылка"), r.profiles.isEmpty() ? QString() : r.profiles.first().host, r));
+            emit importPreviewReady(previewOf(tr("Link"), r.profiles.isEmpty() ? QString() : r.profiles.first().host, r));
         } else if (lower.startsWith(u"superpupervpn://")) {
             const QUrl u(a);
             const QString url = QUrlQuery(u).queryItemValue(u"url"_s, QUrl::FullyDecoded);
             emit showWindowRequested();
             if (u.host() != u"import" || url.isEmpty()) {
-                emit importPreviewReady({{u"error"_s, tr("Неверная ссылка superpupervpn://")}});
+                emit importPreviewReady({{u"error"_s, tr("Invalid superpupervpn:// link")}});
                 continue;
             }
             previewSubscription(url, false, u.fragment(QUrl::FullyDecoded).left(64));
@@ -271,8 +276,14 @@ void App::setSetting(const QString &key, const QVariant &value)
             return;
         }
     }
+    if (key == u"language" && !setLanguage(v.toString()))
+        return;
     s[key] = v;
     m_storage->saveSettings();
+    if (key == u"language") {
+        m_helper->setLanguage(v.toString());
+        m_profiles->rebuild();
+    }
     if (key == u"autostart")
         gui::setAutostart(v.toBool());
     if (key == u"maskHosts")
@@ -296,7 +307,7 @@ void App::toggleConnection()
 void App::connectNow()
 {
     if (!m_helper->isReady()) {
-        emit toast(tr("Служба не запущена"));
+        emit toast(tr("The service is not running"));
         return;
     }
     QString id = m_storage->settings.value(u"selectedProfileId"_s).toString();
@@ -306,7 +317,7 @@ void App::connectNow()
     }
     const Profile *p = find(id);
     if (!p) {
-        emit toast(tr("Сначала добавьте сервер"));
+        emit toast(tr("Add a server first"));
         return;
     }
     if (p->insecure && !p->insecureConsent) {
@@ -316,11 +327,11 @@ void App::connectNow()
     m_helper->call(u"diagnostics"_s, {}, [this](const QJsonObject &d, const QJsonObject &) {
         QStringList issues;
         for (const QJsonValue a : d.value(u"conflictingAdapters"_s).toArray())
-            issues << tr("другой VPN или TUN: %1").arg(a.toString());
+            issues << tr("another VPN or TUN: %1").arg(a.toString());
         if (d.value(u"hotspot"_s).toBool())
-            issues << tr("включена мобильная точка доступа Windows");
+            issues << tr("Windows Mobile Hotspot is on");
         if (d.value(u"ipForwarding"_s).toBool())
-            issues << tr("включена пересылка IP (IP forwarding)");
+            issues << tr("IP forwarding is on");
         m_diag = d.toVariantMap();
         emit diagnosticsChanged();
         const QString signature = issues.join(u'|');
@@ -337,11 +348,11 @@ void App::acknowledgeConflicts()
 {
     QStringList issues;
     for (const QVariant &a : m_diag.value(u"conflictingAdapters"_s).toList())
-        issues << tr("другой VPN или TUN: %1").arg(a.toString());
+        issues << tr("another VPN or TUN: %1").arg(a.toString());
     if (m_diag.value(u"hotspot"_s).toBool())
-        issues << tr("включена мобильная точка доступа Windows");
+        issues << tr("Windows Mobile Hotspot is on");
     if (m_diag.value(u"ipForwarding"_s).toBool())
-        issues << tr("включена пересылка IP (IP forwarding)");
+        issues << tr("IP forwarding is on");
     setSetting(u"ackConflicts"_s, issues.join(u'|'));
     doConnect();
 }
@@ -351,11 +362,11 @@ void App::stopOtherVpns(bool connectAfter)
     m_helper->call(u"stopOtherVpns"_s, {}, [this, connectAfter](const QJsonObject &r, const QJsonObject &e) {
         const QStringList stopped = r.value(u"stopped"_s).toVariant().toStringList();
         if (!e.isEmpty() || stopped.isEmpty()) {
-            emit toast(e.isEmpty() ? tr("Не удалось выключить другие VPN") : e.value(u"message"_s).toString());
+            emit toast(e.isEmpty() ? tr("Could not turn off other VPNs") : e.value(u"message"_s).toString());
             runDiagnostics();
             return;
         }
-        emit toast(tr("Выключено: %1").arg(stopped.join(u", "_s)));
+        emit toast(tr("Turned off: %1").arg(stopped.join(u", "_s)));
         if (connectAfter)
             connectNow();
         else
@@ -504,7 +515,7 @@ void App::recoverSystemProxy(const QJsonObject &helperState)
     if (SystemProxy::pointsTo(marker)) {
         QString error;
         if (m_sysproxy.restore(&error))
-            appLog(u"warning"_s, u"системный прокси восстановлен после аварийного завершения"_s);
+            appLog(u"warning"_s, tr("the system proxy was restored after a crash"));
         else
             appLog(u"error"_s, error);
     } else {
@@ -517,21 +528,21 @@ QVariantMap App::importFromClipboard()
     const QString text = QGuiApplication::clipboard()->text();
     const ImportResult r = parseImport(text.toUtf8());
     for (const QString &k : r.unknownKeys)
-        appLog(u"info"_s, u"неизвестный параметр ссылки: %1"_s.arg(k));
+        appLog(u"info"_s, tr("unknown link parameter: %1").arg(k));
     m_pendingProfiles = r.profiles;
     m_pendingSubscription = {};
     QStringList hosts;
     for (const Profile &p : r.profiles)
         if (!hosts.contains(p.host) && hosts.size() < 3)
             hosts << p.host;
-    return previewOf(tr("Буфер обмена"), hosts.join(u", "_s), r);
+    return previewOf(tr("Clipboard"), hosts.join(u", "_s), r);
 }
 
 void App::previewSubscription(const QString &url, bool allowHttp, const QString &name)
 {
     const QUrl u(url.trimmed(), QUrl::StrictMode);
     if (url.size() > kMaxLinkBytes || !u.isValid() || u.host().isEmpty() || (u.scheme() != u"https" && u.scheme() != u"http")) {
-        emit importPreviewReady({{u"error"_s, tr("Нужна ссылка https://")}});
+        emit importPreviewReady({{u"error"_s, tr("An https:// link is required")}});
         return;
     }
     if (u.scheme() == u"http" && !allowHttp) {
@@ -550,7 +561,7 @@ void App::previewSubscription(const QString &url, bool allowHttp, const QString 
         m_pendingSubscription = {{u"id"_s, newId()}, {u"url"_s, u.toString()}, {u"name"_s, title}, {u"allowHttp"_s, allowHttp},
                                  {u"info"_s, info.toJson()}, {u"updatedAt"_s, QDateTime::currentSecsSinceEpoch()},
                                  {u"error"_s, QString()}, {u"skipped"_s, r.skipped.size()}};
-        emit importPreviewReady(previewOf(tr("Подписка"), u.host(), r, title));
+        emit importPreviewReady(previewOf(tr("Subscription"), u.host(), r, title));
     });
 }
 
@@ -573,7 +584,7 @@ void App::confirmImport()
     saveProfiles();
     if (!find(m_storage->settings.value(u"selectedProfileId"_s).toString()) && !firstId.isEmpty())
         selectProfile(firstId);
-    emit toast(tr("Добавлено серверов: %1").arg(added));
+    emit toast(tr("Servers added: %1").arg(added));
 }
 
 void App::cancelImport()
@@ -601,12 +612,12 @@ void App::fetchSubscription(const QString &url, bool allowHttp,
         r->deleteLater();
         *body += r->readAll();
         if (body->size() > kMaxBodyBytes) {
-            done({}, {}, tr("Подписка больше 5 МБ"));
+            done({}, {}, tr("The subscription is larger than 5 MB"));
             return;
         }
         if (r->error() != QNetworkReply::NoError) {
-            appLog(u"warning"_s, u"подписка %1: %2"_s.arg(maskUrl(url), r->errorString()));
-            done({}, {}, tr("Не удалось загрузить подписку: %1").arg(r->errorString()));
+            appLog(u"warning"_s, tr("subscription %1: %2").arg(maskUrl(url), r->errorString()));
+            done({}, {}, tr("Could not load the subscription: %1").arg(r->errorString()));
             return;
         }
         done(*body, parseSubscriptionHeaders(r->rawHeader("subscription-userinfo"), r->rawHeader("profile-update-interval"),
@@ -656,7 +667,7 @@ void App::refreshSubscription(const QString &id)
             sub[u"info"_s] = info.toJson();
             sub[u"updatedAt"_s] = QDateTime::currentSecsSinceEpoch();
             sub[u"error"_s] = QString();
-            appLog(u"info"_s, u"подписка %1 обновлена: %2 серверов, пропущено %3"_s
+            appLog(u"info"_s, tr("subscription %1 updated: %2 servers, %3 skipped")
                                   .arg(sub.value(u"name"_s).toString()).arg(merged.size()).arg(r.skipped.size()));
         } else {
             sub[u"error"_s] = error;
@@ -727,7 +738,7 @@ QString App::newId() const
 void App::saveProfiles()
 {
     if (!m_storage->saveProfiles() && !m_storage->readOnly)
-        emit toast(tr("Не удалось сохранить профили"));
+        emit toast(tr("Could not save the profiles"));
     profilesChanged();
 }
 
@@ -778,7 +789,7 @@ void App::renameProfile(const QString &id, const QString &name)
     Profile probe = *p;
     probe.name = name.trimmed();
     if (const auto e = validate(probe); e || probe.name.isEmpty()) {
-        emit toast(e ? e->text() : tr("Имя не может быть пустым"));
+        emit toast(e ? e->text() : tr("The name cannot be empty"));
         return;
     }
     p->name = probe.name;
@@ -793,7 +804,7 @@ void App::duplicateProfile(const QString &id)
     Profile copy = *p;
     copy.id = newId();
     copy.subscriptionId.clear();
-    copy.name = (p->name + tr(" (копия)")).left(64);
+    copy.name = (p->name + tr(" (copy)")).left(64);
     copy.pinned = false;
     m_storage->profiles << copy;
     saveProfiles();
@@ -907,7 +918,7 @@ void App::runDiagnostics()
 void App::startService(bool restart)
 {
     if (!gui::startService(restart))
-        emit toast(tr("Не удалось запросить запуск службы"));
+        emit toast(tr("Could not request the service start"));
 }
 
 bool App::exportLogs(const QUrl &file)
@@ -916,7 +927,7 @@ bool App::exportLogs(const QUrl &file)
                                     {u"core.log"_s, m_masker.mask(m_coreLogs->text()).toUtf8()}});
     QSaveFile f(file.toLocalFile());
     const bool ok = f.open(QIODevice::WriteOnly) && f.write(zip) == zip.size() && f.commit();
-    emit toast(ok ? tr("Логи сохранены") : tr("Не удалось сохранить логи"));
+    emit toast(ok ? tr("Logs saved") : tr("Could not save the logs"));
     return ok;
 }
 
@@ -959,7 +970,7 @@ void App::checkForUpdates()
     connect(r, &QNetworkReply::finished, this, [this, r, now] {
         r->deleteLater();
         if (r->error() != QNetworkReply::NoError) {
-            appLog(u"info"_s, u"проверка обновлений не удалась: %1"_s.arg(r->errorString()));
+            appLog(u"info"_s, tr("update check failed: %1").arg(r->errorString()));
             return;
         }
         setSetting(u"lastUpdateCheck"_s, now);
@@ -969,9 +980,9 @@ void App::checkForUpdates()
             tag.remove(0, 1);
         const QString url = o.value(u"html_url"_s).toString();
         if (QVersionNumber::fromString(tag) > QVersionNumber::fromString(version()) && url.startsWith(u"https://github.com/")) {
-            emit toast(tr("Доступна версия %1").arg(tag));
+            emit toast(tr("Version %1 is available").arg(tag));
             if (m_tray)
-                m_tray->showMessage(u"SuperPuperVPN"_s, tr("Доступна версия %1").arg(tag));
+                m_tray->showMessage(u"SuperPuperVPN"_s, tr("Version %1 is available").arg(tag));
         }
     });
 }
@@ -997,21 +1008,21 @@ void App::updateTray()
         return;
     m_tray->setIcon(stateIcon(m_state));
     const QVariantMap cur = current();
-    m_tray->setToolTip(u"SuperPuperVPN — %1"_s.arg(m_state == u"connected" ? tr("подключено · %1").arg(cur.value(u"name"_s).toString())
-                                                : m_state == u"connecting" ? tr("подключение…") : tr("отключено")));
+    m_tray->setToolTip(u"SuperPuperVPN — %1"_s.arg(m_state == u"connected" ? tr("connected · %1").arg(cur.value(u"name"_s).toString())
+                                                : m_state == u"connecting" ? tr("connecting…") : tr("disconnected")));
     m_trayMenu->clear();
     const bool on = m_state == u"connected" || m_state == u"connecting";
-    m_trayMenu->addAction(on ? tr("Отключить") : tr("Подключить"), this, &App::toggleConnection);
+    m_trayMenu->addAction(on ? tr("Disconnect") : tr("Connect"), this, &App::toggleConnection);
 
-    QMenu *modes = m_trayMenu->addMenu(tr("Режим"));
+    QMenu *modes = m_trayMenu->addMenu(tr("Mode"));
     const QString mode = m_storage->settings.value(u"mode"_s).toString();
-    for (const auto &[key, label] : {std::pair{u"proxy"_s, tr("Системный прокси")}, std::pair{u"tun"_s, tr("TUN")}}) {
+    for (const auto &[key, label] : {std::pair{u"proxy"_s, tr("System proxy")}, std::pair{u"tun"_s, tr("TUN")}}) {
         QAction *a = modes->addAction(label, this, [this, key] { setSetting(u"mode"_s, key); });
         a->setCheckable(true);
         a->setChecked(mode == key);
     }
 
-    QMenu *servers = m_trayMenu->addMenu(tr("Сервер"));
+    QMenu *servers = m_trayMenu->addMenu(tr("Server"));
     QStringList ids;
     for (const Profile &p : std::as_const(m_storage->profiles))
         if (p.pinned)
@@ -1028,8 +1039,8 @@ void App::updateTray()
     servers->setEnabled(!ids.isEmpty());
 
     m_trayMenu->addSeparator();
-    m_trayMenu->addAction(tr("Открыть"), this, &App::showWindowRequested);
-    m_trayMenu->addAction(tr("Выход"), this, &App::quit);
+    m_trayMenu->addAction(tr("Open"), this, &App::showWindowRequested);
+    m_trayMenu->addAction(tr("Quit"), this, &App::quit);
 }
 
 }

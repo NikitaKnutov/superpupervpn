@@ -1,5 +1,6 @@
 #include "linkparser.h"
 
+#include <QCoreApplication>
 #include <QHostAddress>
 #include <QRegularExpression>
 #include <QSet>
@@ -47,16 +48,16 @@ ParseResult parseLink(const QString &input)
 {
     const QString link = input.trimmed();
     if (link.toUtf8().size() > kMaxLinkBytes)
-        return fail(QString(), u"ссылка длиннее 8 КБ"_s);
+        return fail(QString(), QCoreApplication::translate("LinkParser", "the link is longer than 8 KB"));
 
     const qsizetype colon = link.indexOf(u':');
     if (colon <= 0)
-        return fail(QString(), u"не ссылка"_s);
+        return fail(QString(), QCoreApplication::translate("LinkParser", "not a link"));
     const QString scheme = link.left(colon).toLower();
     if (kOtherProtocols.contains(scheme))
         return fail(FieldError::UnsupportedProtocol, u"scheme"_s, QString());
     if (scheme != u"vless" || !link.mid(colon).startsWith(u"://"))
-        return fail(u"scheme"_s, u"неизвестная схема"_s);
+        return fail(u"scheme"_s, QCoreApplication::translate("LinkParser", "unknown scheme"));
 
     QString rest = link.mid(colon + 3);
     QString fragment, query;
@@ -70,17 +71,17 @@ ParseResult parseLink(const QString &input)
     }
     if (const qsizetype s = rest.indexOf(u'/'); s >= 0) {
         if (rest.mid(s) != u"/")
-            return fail(u"path"_s, u"лишний путь после адреса"_s);
+            return fail(u"path"_s, QCoreApplication::translate("LinkParser", "unexpected path after the address"));
         rest.truncate(s);
     }
 
     Profile p;
     const qsizetype at = rest.lastIndexOf(u'@');
     if (at < 0)
-        return fail(u"id"_s, u"пустой идентификатор"_s);
+        return fail(u"id"_s, QCoreApplication::translate("LinkParser", "empty ID"));
     const auto uuid = pct(rest.left(at));
     if (!uuid)
-        return fail(u"id"_s, u"неверная кодировка"_s);
+        return fail(u"id"_s, QCoreApplication::translate("LinkParser", "invalid encoding"));
     p.uuid = *uuid;
 
     const QString hostport = rest.mid(at + 1);
@@ -88,29 +89,29 @@ ParseResult parseLink(const QString &input)
     if (hostport.startsWith(u'[')) {
         const qsizetype close = hostport.indexOf(u']');
         if (close < 0 || QHostAddress(hostport.mid(1, close - 1)).protocol() != QAbstractSocket::IPv6Protocol)
-            return fail(u"host"_s, u"неверный IPv6-адрес"_s);
+            return fail(u"host"_s, QCoreApplication::translate("LinkParser", "invalid IPv6 address"));
         if (hostport.mid(close + 1, 1) != u":")
-            return fail(u"port"_s, u"не указан"_s);
+            return fail(u"port"_s, QCoreApplication::translate("LinkParser", "missing"));
         host = hostport.mid(1, close - 1);
         portStr = hostport.mid(close + 2);
     } else {
         const qsizetype c = hostport.lastIndexOf(u':');
         if (c < 0)
-            return fail(u"port"_s, u"не указан"_s);
+            return fail(u"port"_s, QCoreApplication::translate("LinkParser", "missing"));
         host = hostport.left(c);
         portStr = hostport.mid(c + 1);
         if (host.contains(u':'))
-            return fail(u"host"_s, u"IPv6-адрес должен быть в []"_s);
+            return fail(u"host"_s, QCoreApplication::translate("LinkParser", "an IPv6 address must be in []"));
         const auto decoded = pct(host);
         if (!decoded)
-            return fail(u"host"_s, u"неверная кодировка"_s);
+            return fail(u"host"_s, QCoreApplication::translate("LinkParser", "invalid encoding"));
         host = QHostAddress(*decoded).isNull() ? QString::fromLatin1(QUrl::toAce(*decoded)) : *decoded;
         if (host.isEmpty())
-            return fail(u"host"_s, u"не домен и не IP-адрес"_s);
+            return fail(u"host"_s, QCoreApplication::translate("LinkParser", "not a domain or an IP address"));
     }
     static const QRegularExpression digits(u"^[0-9]{1,5}$"_s);
     if (!digits.match(portStr).hasMatch())
-        return fail(u"port"_s, u"не число"_s);
+        return fail(u"port"_s, QCoreApplication::translate("LinkParser", "not a number"));
     p.host = host;
     p.port = portStr.toInt();
 
@@ -121,9 +122,9 @@ ParseResult parseLink(const QString &input)
         const auto key = pct(eq < 0 ? part : part.left(eq));
         const auto value = pct(eq < 0 ? QString() : part.mid(eq + 1));
         if (!key || !value)
-            return fail(key.value_or(QString()), u"неверная кодировка"_s);
+            return fail(key.value_or(QString()), QCoreApplication::translate("LinkParser", "invalid encoding"));
         if (params.contains(*key))
-            return fail(*key, u"параметр повторяется"_s);
+            return fail(*key, QCoreApplication::translate("LinkParser", "the parameter is repeated"));
         params.insert(*key, *value);
         if (!kKnownParams.contains(*key)) {
             r.unknownKeys << *key;
@@ -132,12 +133,12 @@ ParseResult parseLink(const QString &input)
     }
 
     if (!params.value(u"pqv"_s).isEmpty())
-        return fail(FieldError::UnsupportedParam, u"pqv"_s, u"Параметр pqv не поддерживается ядром"_s);
+        return fail(FieldError::UnsupportedParam, u"pqv"_s, QCoreApplication::translate("LinkParser", "The pqv parameter is not supported by the core"));
     if (params.contains(u"fm"_s))
-        return fail(FieldError::UnsupportedParam, u"fm"_s, u"Параметр fm не поддерживается ядром"_s);
+        return fail(FieldError::UnsupportedParam, u"fm"_s, QCoreApplication::translate("LinkParser", "The fm parameter is not supported by the core"));
     if (const QString ht = params.value(u"headerType"_s); !ht.isEmpty() && ht != u"none")
         return fail(FieldError::UnsupportedParam, u"headerType"_s,
-                    u"Параметр headerType=%1 не поддерживается ядром"_s.arg(ht.left(16)));
+                    QCoreApplication::translate("LinkParser", "The headerType=%1 parameter is not supported by the core").arg(ht.left(16)));
 
     p.network = params.value(u"type"_s);
     if (p.network.isEmpty())
@@ -179,7 +180,7 @@ ParseResult parseLink(const QString &input)
 
     const auto name = pct(fragment);
     if (!name)
-        return fail(u"name"_s, u"неверная кодировка"_s);
+        return fail(u"name"_s, QCoreApplication::translate("LinkParser", "invalid encoding"));
     p.name = name->trimmed();
     if (p.name.isEmpty())
         p.name = p.host;
@@ -218,7 +219,7 @@ ImportResult parseImport(const QByteArray &body)
 {
     ImportResult out;
     if (body.size() > kMaxBodyBytes) {
-        out.skipped << u"данные больше 5 МБ"_s;
+        out.skipped << QCoreApplication::translate("LinkParser", "the data is larger than 5 MB");
         return out;
     }
     static const QRegularExpression lineBreak(u"[\r\n]+"_s);
@@ -230,13 +231,13 @@ ImportResult parseImport(const QByteArray &body)
         if (line.isEmpty())
             continue;
         if (out.profiles.size() >= kMaxServers) {
-            out.skipped << u"строка %1: превышен лимит %2 серверов"_s.arg(lineNo).arg(kMaxServers);
+            out.skipped << QCoreApplication::translate("LinkParser", "line %1: over the limit of %2 servers").arg(lineNo).arg(kMaxServers);
             continue;
         }
         ParseResult r = parseLink(line);
         out.unknownKeys << r.unknownKeys;
         if (r.error)
-            out.skipped << u"строка %1: %2"_s.arg(lineNo).arg(r.error->text());
+            out.skipped << QCoreApplication::translate("LinkParser", "line %1: %2").arg(lineNo).arg(r.error->text());
         else
             out.profiles << r.profile;
     }

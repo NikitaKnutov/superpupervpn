@@ -58,7 +58,7 @@ SuperPuperVPN is the opposite:
   - **System proxy**: browsers and apps that respect the OS proxy go through the server.
   - **TUN**: all traffic of the computer goes through the server, including games and the terminal.
 - **All traffic through the tunnel**, DNS included (DoH through the connection, fake-IP in TUN), IPv6 never leaks.
-- **Server list** with search, sorting, pinning, real latency (`generate_204` through the server itself)
+- **Server list** with search, sorting, a **Favorites** folder on top, real latency (`generate_204` through the server itself)
   and **country flags detected from the server IP** with an offline database.
 - **Honest status**: "Connected" only after a real request went through the server.
 - **Auto-recovery**: the core is restarted if it crashes; the system proxy is restored after a crash or a power loss.

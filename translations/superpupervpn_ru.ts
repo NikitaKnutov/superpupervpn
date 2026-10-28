@@ -896,7 +896,7 @@ This may break the connection or let part of the traffic bypass the tunnel.</sou
 <context>
     <name>Profile</name>
     <message>
-        <location filename="../src/core/profile.cpp" line="+140"/>
+        <location filename="../src/core/profile.cpp" line="+142"/>
         <source>unknown field</source>
         <translation>неизвестное поле</translation>
     </message>
@@ -1857,7 +1857,12 @@ This may break the connection or let part of the traffic bypass the tunnel.</sou
 <context>
     <name>rl::ProfileModel</name>
     <message>
-        <location filename="../src/gui/models.cpp" line="+97"/>
+        <location filename="../src/gui/models.cpp" line="+101"/>
+        <source>Favorites</source>
+        <translation>Избранное</translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>My servers</source>
         <translation>Мои серверы</translation>
     </message>

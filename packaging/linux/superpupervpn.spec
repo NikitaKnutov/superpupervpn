@@ -1,7 +1,7 @@
 %global mihomo_version v1.19.32
 
 Name:           superpupervpn
-Version:        0.2.1
+Version:        0.2.2
 Release:        1%{?dist}
 Summary:        SuperPuperVPN, a VLESS/REALITY desktop client
 License:        GPL-3.0-or-later AND GPL-3.0-only AND OFL-1.1
@@ -76,6 +76,9 @@ fi
 %{_datadir}/icons/hicolor/scalable/apps/superpupervpn.svg
 
 %changelog
+* Wed Oct 28 2026 SuperPuperVPN <noreply@superpupervpn.invalid> - 0.2.2-1
+- Favorites stay after a subscription refresh and live in their own folder on top
+
 * Mon Oct 26 2026 SuperPuperVPN <noreply@superpupervpn.invalid> - 0.2.1-1
 - Links with an spx path (as 3x-ui makes them) import instead of being refused
 

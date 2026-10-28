@@ -1,3 +1,9 @@
+superpupervpn (0.2.2-1) unstable; urgency=medium
+
+  * Favorites stay after a subscription refresh and live in their own folder on top
+
+ -- SuperPuperVPN <noreply@superpupervpn.invalid>  Wed, 28 Oct 2026 15:30:00 +0300
+
 superpupervpn (0.2.1-1) unstable; urgency=medium
 
   * Links with an spx path (as 3x-ui makes them) import instead of being refused

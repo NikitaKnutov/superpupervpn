@@ -325,6 +325,8 @@ private slots:
         }
         QList<Profile> incoming = {old[2], old[1]};
         incoming[1].name = u"renamed"_s;
+        incoming[1].sid = u"ffff"_s;  // panels hand out a random short ID and SNI on every fetch
+        incoming[1].sni = u"other.example.com"_s;
         for (Profile &p : incoming) {
             p.id.clear();
             p.pinned = false;

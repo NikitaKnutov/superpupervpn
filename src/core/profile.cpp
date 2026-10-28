@@ -71,8 +71,10 @@ QString Profile::badge() const
 
 QString Profile::identityKey() const
 {
+    // No sni/sid: panels (3x-ui, Marzban) pick a random one per request, so with them every refresh made
+    // "new" servers and dropped favorites and the selection.
     const QStringList parts = {host, QString::number(port), uuid, network, encryption, flow, security,
-                               sni, pbk, sid, path, hostHeader, serviceName, mode};
+                               pbk, path, hostHeader, serviceName, mode};
     return QString::fromLatin1(QCryptographicHash::hash(parts.join(QChar(0x1f)).toUtf8(),
                                                         QCryptographicHash::Sha256).toHex());
 }

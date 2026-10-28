@@ -11,6 +11,10 @@
 using namespace Qt::StringLiterals;
 
 namespace rl {
+namespace {
+const QString kFavorites = u"favorites"_s;
+}
+
 ProfileModel::ProfileModel(App *app) : QAbstractListModel(app), m_app(app) {}
 
 std::pair<QString, QString> ProfileModel::splitFlag(const QString &name)
@@ -31,7 +35,8 @@ void ProfileModel::rebuild()
     for (const QJsonValue v : st.settings.value(u"collapsedGroups"_s).toArray())
         collapsed << v.toString();
 
-    QStringList groups;
+    // Favorites first: pinned servers move there out of their own group.
+    QStringList groups{kFavorites};
     for (const QJsonValue s : st.subscriptions)
         groups << s.toObject().value(u"id"_s).toString();
     groups << QString();
@@ -42,18 +47,16 @@ void ProfileModel::rebuild()
         QList<int> members;
         for (int i = 0; i < st.profiles.size(); ++i) {
             const Profile &p = st.profiles[i];
-            if (p.subscriptionId != g)
+            if (g == kFavorites ? !p.pinned : (p.pinned || p.subscriptionId != g))
                 continue;
             if (!search.isEmpty() && !p.name.contains(search, Qt::CaseInsensitive) && !p.host.contains(search, Qt::CaseInsensitive))
                 continue;
             members << i;
         }
-        if (g.isEmpty() && members.isEmpty() && st.profiles.isEmpty())
+        if (members.isEmpty() && (g == kFavorites || (g.isEmpty() && st.profiles.isEmpty())))
             continue;
         std::stable_sort(members.begin(), members.end(), [&](int a, int b) {
             const Profile &pa = st.profiles[a], &pb = st.profiles[b];
-            if (pa.pinned != pb.pinned)
-                return pa.pinned;
             if (byDelay) {
                 auto key = [&](const Profile &p) { const int d = m_app->delayOf(p.id).toInt(); return d < 0 ? INT_MAX : d; };
                 if (key(pa) != key(pb))
@@ -94,13 +97,16 @@ QVariant ProfileModel::data(const QModelIndex &index, int role) const
         const QJsonObject sub = m_app->subscription(r.groupId);
         const QJsonObject info = sub.value(u"info"_s).toObject();
         switch (role) {
-        case GroupNameRole: return r.groupId.isEmpty() ? tr("My servers") : sub.value(u"name"_s).toString();
+        case GroupNameRole:
+            return r.groupId == kFavorites ? tr("Favorites")
+                 : r.groupId.isEmpty()     ? tr("My servers")
+                                           : sub.value(u"name"_s).toString();
         case CollapsedRole: {
             const QJsonArray c = st.settings.value(u"collapsedGroups"_s).toArray();
             return c.contains(r.groupId.isEmpty() ? u"mine"_s : r.groupId);
         }
         case CountRole: return r.count;
-        case IsSubscriptionRole: return !r.groupId.isEmpty();
+        case IsSubscriptionRole: return !sub.isEmpty();
         case UsedRole: return double(info.value(u"upload"_s).toInteger(0) + info.value(u"download"_s).toInteger(0));
         case TotalRole: return double(info.value(u"total"_s).toInteger(-1));
         case ExpireDaysRole: {

@@ -59,7 +59,8 @@ SuperPuperVPN is the opposite:
   - **TUN**: all traffic of the computer goes through the server, including games and the terminal.
 - **All traffic through the tunnel**, DNS included (DoH through the connection, fake-IP in TUN), IPv6 never leaks.
 - **Server list** with search, sorting, a **Favorites** folder on top, real latency (`generate_204` through the server itself)
-  and **country flags detected from the server IP** with an offline database.
+  and **country flags detected from the server IP** with an offline database, drawn as images, so they show on
+  Windows and without an emoji font too.
 - **Honest status**: "Connected" only after a real request went through the server.
 - **Auto-recovery**: the core is restarted if it crashes; the system proxy is restored after a crash or a power loss.
 - **English and Russian interface**, dark and light themes, tray icon, autostart, connect on start, a log viewer with masked export.
@@ -268,5 +269,5 @@ a modified version, it has to stay open source under the same license.
 
 It ships third-party components under their own licenses, see [`licenses/`](licenses):
 [mihomo](https://github.com/MetaCubeX/mihomo) (GPL-3.0, separate process), Qt (LGPL-3.0), OpenSSL (Apache-2.0),
-libsecret (LGPL-2.1+), Inter font (OFL-1.1) and
+libsecret (LGPL-2.1+), Inter font (OFL-1.1), [circle-flags](https://github.com/HatScripts/circle-flags) (MIT) and
 [IP Geolocation by DB-IP](https://db-ip.com) (CC BY 4.0).

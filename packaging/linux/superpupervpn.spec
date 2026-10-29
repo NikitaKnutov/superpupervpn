@@ -1,10 +1,10 @@
 %global mihomo_version v1.19.32
 
 Name:           superpupervpn
-Version:        0.2.2
+Version:        0.2.3
 Release:        1%{?dist}
 Summary:        SuperPuperVPN, a VLESS/REALITY desktop client
-License:        GPL-3.0-or-later AND GPL-3.0-only AND OFL-1.1
+License:        GPL-3.0-or-later AND GPL-3.0-only AND OFL-1.1 AND MIT
 URL:            https://github.com/NikitaKnutov/superpupervpn
 Source0:        %{name}-%{version}.tar.gz
 Source1:        https://github.com/MetaCubeX/mihomo/releases/download/%{mihomo_version}/mihomo-linux-amd64-compatible-%{mihomo_version}.gz
@@ -76,6 +76,9 @@ fi
 %{_datadir}/icons/hicolor/scalable/apps/superpupervpn.svg
 
 %changelog
+* Thu Oct 29 2026 SuperPuperVPN <noreply@superpupervpn.invalid> - 0.2.3-1
+- Country flags are drawn as images, so they show on Windows and without an emoji font
+
 * Wed Oct 28 2026 SuperPuperVPN <noreply@superpupervpn.invalid> - 0.2.2-1
 - Favorites stay after a subscription refresh and live in their own folder on top
 

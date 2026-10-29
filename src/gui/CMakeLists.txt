@@ -33,12 +33,13 @@ qt_add_qml_module(superpupervpn
         qml/PillButton.qml qml/Field.qml qml/Flag.qml qml/Sheet.qml
 )
 file(GLOB UI_ICONS ${PROJECT_SOURCE_DIR}/assets/icons/ui/*.svg)
+file(GLOB FLAGS ${PROJECT_SOURCE_DIR}/assets/flags/*.svg)
 qt_add_resources(superpupervpn assets
     PREFIX /
     BASE ${PROJECT_SOURCE_DIR}/assets
     FILES ${PROJECT_SOURCE_DIR}/assets/icons/superpupervpn.svg ${PROJECT_SOURCE_DIR}/assets/fonts/InterVariable.ttf
           ${PROJECT_SOURCE_DIR}/assets/geo/country.bin
-          ${UI_ICONS}
+          ${UI_ICONS} ${FLAGS}
 )
 
 target_compile_definitions(superpupervpn PRIVATE SUPERPUPERVPN_GITHUB_REPO="${SUPERPUPERVPN_GITHUB_REPO}")

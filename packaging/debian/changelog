@@ -1,3 +1,9 @@
+superpupervpn (0.2.3-1) unstable; urgency=medium
+
+  * Country flags are drawn as images, so they show on Windows and without an emoji font
+
+ -- SuperPuperVPN <noreply@superpupervpn.invalid>  Thu, 29 Oct 2026 16:30:00 +0300
+
 superpupervpn (0.2.2-1) unstable; urgency=medium
 
   * Favorites stay after a subscription refresh and live in their own folder on top

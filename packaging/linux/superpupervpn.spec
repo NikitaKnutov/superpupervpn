@@ -1,7 +1,7 @@
 %global mihomo_version v1.19.32
 
 Name:           superpupervpn
-Version:        0.2.3
+Version:        0.2.4
 Release:        1%{?dist}
 Summary:        SuperPuperVPN, a VLESS/REALITY desktop client
 License:        GPL-3.0-or-later AND GPL-3.0-only AND OFL-1.1 AND MIT
@@ -76,6 +76,9 @@ fi
 %{_datadir}/icons/hicolor/scalable/apps/superpupervpn.svg
 
 %changelog
+* Tue Nov 03 2026 SuperPuperVPN <noreply@superpupervpn.invalid> - 0.2.4-1
+- Subscriptions from providers requiring a v2rayNG client now load correctly
+
 * Thu Oct 29 2026 SuperPuperVPN <noreply@superpupervpn.invalid> - 0.2.3-1
 - Country flags are drawn as images, so they show on Windows and without an emoji font
 

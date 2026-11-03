@@ -597,7 +597,7 @@ void App::fetchSubscription(const QString &url, bool allowHttp,
                             std::function<void(QByteArray, SubscriptionInfo, QString)> done)
 {
     QNetworkRequest req{QUrl(url)};
-    req.setHeader(QNetworkRequest::UserAgentHeader, u"SuperPuperVPN/%1 (%2)"_s.arg(version(), gui::osName()));
+    req.setHeader(QNetworkRequest::UserAgentHeader, u"v2rayNG/1.8.5"_s);
     req.setTransferTimeout(30000);
     req.setAttribute(QNetworkRequest::RedirectPolicyAttribute,
                      allowHttp ? QNetworkRequest::SameOriginRedirectPolicy : QNetworkRequest::NoLessSafeRedirectPolicy);

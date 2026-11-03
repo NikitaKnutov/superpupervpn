@@ -1,3 +1,9 @@
+superpupervpn (0.2.4-1) unstable; urgency=medium
+
+  * Subscriptions from providers requiring a v2rayNG client now load correctly
+
+ -- SuperPuperVPN <noreply@superpupervpn.invalid>  Tue, 03 Nov 2026 09:52:27 +0300
+
 superpupervpn (0.2.3-1) unstable; urgency=medium
 
   * Country flags are drawn as images, so they show on Windows and without an emoji font

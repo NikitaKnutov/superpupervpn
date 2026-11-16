@@ -12,6 +12,7 @@
 #include <QClipboard>
 #include <QDateTime>
 #include <QDesktopServices>
+#include <QDir>
 #include <QFile>
 #include <QHostInfo>
 #include <QIcon>
@@ -22,11 +23,11 @@
 #include <QNetworkReply>
 #include <QPainter>
 #include <QSaveFile>
+#include <QStandardPaths>
 #include <QSystemTrayIcon>
 #include <QTimer>
 #include <QUrlQuery>
 #include <QUuid>
-#include <QVersionNumber>
 
 using namespace Qt::StringLiterals;
 
@@ -945,6 +946,10 @@ void App::openUrl(const QString &url)
 
 void App::quit()
 {
+    if (m_updateBusy) {
+        emit toast(tr("Please wait for the update installation to finish"));
+        return;
+    }
     if (m_state == u"connected" || m_state == u"connecting") {
         m_quitting = true;
         disconnectNow();
@@ -961,7 +966,7 @@ void App::quit()
 void App::checkForUpdates()
 {
     const qint64 now = QDateTime::currentSecsSinceEpoch();
-    if (now - m_storage->settings.value(u"lastUpdateCheck"_s).toInteger() < 24 * 3600)
+    if (m_updateBusy || now - m_storage->settings.value(u"lastUpdateCheck"_s).toInteger() < 24 * 3600)
         return;
     QNetworkRequest req(QUrl(u"https://api.github.com/repos/" SUPERPUPERVPN_GITHUB_REPO "/releases/latest"_s));
     req.setHeader(QNetworkRequest::UserAgentHeader, u"SuperPuperVPN/%1 (%2)"_s.arg(version(), gui::osName()));
@@ -974,16 +979,106 @@ void App::checkForUpdates()
             return;
         }
         setSetting(u"lastUpdateCheck"_s, now);
-        const QJsonObject o = QJsonDocument::fromJson(r->readAll()).object();
-        QString tag = o.value(u"tag_name"_s).toString();
+        const QJsonObject release = QJsonDocument::fromJson(r->readAll()).object();
+        QString tag = release.value(u"tag_name"_s).toString();
         if (tag.startsWith(u'v'))
             tag.remove(0, 1);
-        const QString url = o.value(u"html_url"_s).toString();
-        if (QVersionNumber::fromString(tag) > QVersionNumber::fromString(version()) && url.startsWith(u"https://github.com/")) {
-            emit toast(tr("Version %1 is available").arg(tag));
-            if (m_tray)
-                m_tray->showMessage(u"SuperPuperVPN"_s, tr("Version %1 is available").arg(tag));
+        const bool hadUpdate = !m_update.version.isEmpty();
+        m_update = parseUpdatePackage(release, version(), gui::updateAssetName(tag));
+        if (hadUpdate || !m_update.version.isEmpty())
+            emit updateChanged();
+    });
+}
+
+void App::installUpdate()
+{
+    if (m_updateBusy || m_update.version.isEmpty())
+        return;
+    m_updateBusy = true;
+    emit updateChanged();
+    auto fail = [this](const QString &error) {
+        m_updateBusy = false;
+        emit updateChanged();
+        emit toast(error);
+    };
+    const UpdatePackage package = m_update;
+    const QString cache = QStandardPaths::writableLocation(QStandardPaths::CacheLocation);
+    if (cache.isEmpty() || !QDir().mkpath(cache + u"/updates"_s)) {
+        fail(tr("Could not prepare the update download"));
+        return;
+    }
+    const QString path = cache + u"/updates/"_s + package.name;
+    downloadUpdate(package.url, path, package.size, [this, package, path, fail](const QString &error) {
+        if (!error.isEmpty()) {
+            fail(tr("Could not download the update: %1").arg(error));
+            return;
         }
+        if (!verifyUpdatePackage(path, package)) {
+            fail(tr("The downloaded update failed verification"));
+            return;
+        }
+        gui::installUpdate(path, this, [this](gui::UpdateInstallResult result, const QString &error) {
+            m_updateBusy = false;
+            if (result == gui::UpdateInstallResult::Failed) {
+                emit updateChanged();
+                emit toast(tr("Could not install the update: %1").arg(error));
+                return;
+            }
+            if (result == gui::UpdateInstallResult::Started) {
+                emit updateChanged();
+                emit toast(tr("The update installer has started"));
+                quit();
+                return;
+            }
+            m_update = {};
+            emit updateChanged();
+            emit toast(tr("Update installed. Restart the application"));
+        });
+    });
+}
+
+void App::downloadUpdate(const QUrl &url, const QString &path, qint64 size, std::function<void(QString)> done)
+{
+    auto file = std::make_shared<QSaveFile>(path);
+    if (!file->open(QIODevice::WriteOnly)) {
+        done(file->errorString());
+        return;
+    }
+    QNetworkRequest req{url};
+    req.setHeader(QNetworkRequest::UserAgentHeader, u"SuperPuperVPN/%1 (%2)"_s.arg(version(), gui::osName()));
+    req.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::NoLessSafeRedirectPolicy);
+    req.setTransferTimeout(120000);
+    QNetworkReply *r = m_nam->get(req);
+    auto written = std::make_shared<qint64>(0);
+    auto write = [r, file, written, size] {
+        const QByteArray data = r->readAll();
+        if (data.isEmpty())
+            return;
+        if (*written + data.size() > size || file->write(data) != data.size()) {
+            r->abort();
+            return;
+        }
+        *written += data.size();
+    };
+    connect(r, &QNetworkReply::readyRead, this, write);
+    connect(r, &QNetworkReply::finished, this, [this, r, file, written, size, write, done] {
+        write();
+        r->deleteLater();
+        if (r->error() != QNetworkReply::NoError) {
+            file->cancelWriting();
+            done(r->errorString());
+            return;
+        }
+        if (*written != size) {
+            file->cancelWriting();
+            done(tr("The update download is incomplete"));
+            return;
+        }
+        if (!file->commit()) {
+            done(file->errorString());
+            return;
+        }
+        done({});
     });
 }
 

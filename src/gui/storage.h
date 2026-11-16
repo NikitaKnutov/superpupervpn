@@ -28,6 +28,6 @@ private:
     QByteArray m_key;
 };
 
-QByteArray loadOrCreateKey(const QString &dir, QString *warning);
+QByteArray loadOrCreateKey(const QString &dir, QString *warning, bool hasProfiles);
 
 }

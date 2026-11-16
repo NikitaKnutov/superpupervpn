@@ -53,6 +53,27 @@ bool startService(bool restart)
     return ShellExecuteExW(&sei);
 }
 
+QString updateAssetName(const QString &version)
+{
+    return u"SuperPuperVPN-%1-windows-x64.msi"_s.arg(version);
+}
+
+void installUpdate(const QString &path, QObject *context, UpdateInstallCallback done)
+{
+    Q_UNUSED(context);
+    const std::wstring params = u"/i \"%1\" /passive"_s.arg(QDir::toNativeSeparators(path)).toStdWString();
+    SHELLEXECUTEINFOW sei{sizeof(sei)};
+    sei.lpVerb = L"runas";
+    sei.lpFile = L"msiexec.exe";
+    sei.lpParameters = params.c_str();
+    sei.nShow = SW_SHOWNORMAL;
+    if (!ShellExecuteExW(&sei)) {
+        done(UpdateInstallResult::Failed, QObject::tr("Could not start the update installer"));
+        return;
+    }
+    done(UpdateInstallResult::Started, {});
+}
+
 bool reduceMotion()
 {
     BOOL animations = TRUE;

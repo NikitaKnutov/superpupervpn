@@ -1,7 +1,6 @@
 #include "storage.h"
 
 #include <QCoreApplication>
-#include <QDateTime>
 #include <QDir>
 #include <QFile>
 #include <QJsonDocument>
@@ -124,12 +123,12 @@ bool Storage::load(QString *error)
         }
     }
 
-    m_key = loadOrCreateKey(dir(), &warning);
+    const QString profilesPath = dir() + u"/profiles.enc"_s;
+    m_key = loadOrCreateKey(dir(), &warning, QFile::exists(profilesPath));
     if (m_key.size() != 32) {
         *error = QCoreApplication::translate("Storage", "failed to get the encryption key");
         return false;
     }
-    const QString profilesPath = dir() + u"/profiles.enc"_s;
     QFile f(profilesPath);
     if (!f.exists())
         return true;
@@ -140,10 +139,8 @@ bool Storage::load(QString *error)
     const auto plain = unseal(m_key, f.readAll());
     f.close();
     if (!plain) {
-        const QString aside = profilesPath + u".unreadable-"_s + QDateTime::currentDateTime().toString(u"yyyyMMdd-HHmmss"_s);
-        QFile::rename(profilesPath, aside);
-        warning = QCoreApplication::translate("Storage", "Could not decrypt the profiles; the file was saved as %1").arg(QDir::toNativeSeparators(aside));
-        return true;
+        *error = QCoreApplication::translate("Storage", "Could not decrypt saved servers. The profiles file was left unchanged");
+        return false;
     }
     const QJsonObject o = QJsonDocument::fromJson(*plain).object();
     const int v = o.value(u"version"_s).toInt(1);

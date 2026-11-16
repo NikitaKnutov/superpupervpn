@@ -213,7 +213,22 @@
 <context>
     <name>HomePage</name>
     <message>
-        <location filename="../src/gui/qml/HomePage.qml" line="+83"/>
+        <location filename="../src/gui/qml/HomePage.qml" line="+84"/>
+        <source>Version %1 is available</source>
+        <translation>Доступна версия %1</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Updating…</source>
+        <translation>Обновление…</translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Update</source>
+        <translation>Обновить</translation>
+    </message>
+    <message>
+        <location line="+16"/>
         <source>The %1 service is not running</source>
         <translation>Служба %1 не запущена</translation>
     </message>
@@ -327,7 +342,7 @@
         <translation>Добавить сервер</translation>
     </message>
     <message>
-        <location line="+86"/>
+        <location line="+88"/>
         <source>From clipboard</source>
         <translation>Из буфера обмена</translation>
     </message>
@@ -1231,6 +1246,19 @@ This may break the connection or let part of the traffic bypass the tunnel.</sou
     </message>
 </context>
 <context>
+    <name>QObject</name>
+    <message>
+        <location filename="../src/gui/platformgui_linux.cpp" line="+88"/>
+        <source>The package installer failed</source>
+        <translation>Установщик пакета завершился с ошибкой</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/platformgui_win.cpp" line="+71"/>
+        <source>Could not start the update installer</source>
+        <translation>Не удалось запустить установщик обновления</translation>
+    </message>
+</context>
+<context>
     <name>ServersPage</name>
     <message>
         <location filename="../src/gui/qml/ServersPage.qml" line="+18"/>
@@ -1565,14 +1593,14 @@ This may break the connection or let part of the traffic bypass the tunnel.</sou
         <translation>не удалось получить ключ шифрования</translation>
     </message>
     <message>
-        <location line="+8"/>
+        <location line="+7"/>
         <source>no access to %1</source>
         <translation>нет доступа к %1</translation>
     </message>
     <message>
-        <location line="+8"/>
-        <source>Could not decrypt the profiles; the file was saved as %1</source>
-        <translation>Не удалось расшифровать профили; файл сохранён как %1</translation>
+        <location line="+6"/>
+        <source>Could not decrypt saved servers. The profiles file was left unchanged</source>
+        <translation>Не удалось расшифровать сохранённые серверы. Файл профилей оставлен без изменений</translation>
     </message>
     <message>
         <location line="+15"/>
@@ -1645,7 +1673,7 @@ This may break the connection or let part of the traffic bypass the tunnel.</sou
 <context>
     <name>rl::App</name>
     <message>
-        <location filename="../src/gui/app.cpp" line="+109"/>
+        <location filename="../src/gui/app.cpp" line="+110"/>
         <source>service: </source>
         <translation>служба: </translation>
     </message>
@@ -1788,18 +1816,52 @@ This may break the connection or let part of the traffic bypass the tunnel.</sou
         <translation>Не удалось сохранить логи</translation>
     </message>
     <message>
-        <location line="+43"/>
+        <location line="+19"/>
+        <source>Please wait for the update installation to finish</source>
+        <translation>Дождитесь завершения установки обновления</translation>
+    </message>
+    <message>
+        <location line="+28"/>
         <source>update check failed: %1</source>
         <translation>проверка обновлений не удалась: %1</translation>
     </message>
     <message>
-        <location line="+10"/>
-        <location line="+2"/>
-        <source>Version %1 is available</source>
-        <translation>Доступна версия %1</translation>
+        <location line="+29"/>
+        <source>Could not prepare the update download</source>
+        <translation>Не удалось подготовить загрузку обновления</translation>
     </message>
     <message>
-        <location line="+26"/>
+        <location line="+6"/>
+        <source>Could not download the update: %1</source>
+        <translation>Не удалось скачать обновление: %1</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>The downloaded update failed verification</source>
+        <translation>Скачанное обновление не прошло проверку</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Could not install the update: %1</source>
+        <translation>Не удалось установить обновление: %1</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>The update installer has started</source>
+        <translation>Установщик обновления запущен</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Update installed. Restart the application</source>
+        <translation>Обновление установлено. Перезапустите приложение</translation>
+    </message>
+    <message>
+        <location line="+39"/>
+        <source>The update download is incomplete</source>
+        <translation>Загрузка обновления не завершена</translation>
+    </message>
+    <message>
+        <location line="+32"/>
         <source>connected · %1</source>
         <translation>подключено · %1</translation>
     </message>

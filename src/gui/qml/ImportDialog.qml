@@ -26,11 +26,11 @@ Sheet {
         id: tile
         property string subtitle
         Layout.fillWidth: true
-        implicitHeight: 128
-        contentItem: ColumnLayout {
-            spacing: 8
+        implicitHeight: 84
+        contentItem: RowLayout {
+            spacing: 14
             Rectangle {
-                Layout.alignment: Qt.AlignHCenter
+                Layout.alignment: Qt.AlignVCenter
                 implicitWidth: 48
                 implicitHeight: 48
                 radius: 24
@@ -45,21 +45,23 @@ Sheet {
                     background: null
                 }
             }
-            Label {
+            ColumnLayout {
                 Layout.fillWidth: true
-                text: tile.text
-                font.weight: Font.DemiBold
-                color: Theme.text
-                wrapMode: Text.Wrap
-                horizontalAlignment: Text.AlignHCenter
-            }
-            Label {
-                Layout.fillWidth: true
-                text: tile.subtitle
-                color: Theme.muted
-                font.pixelSize: Theme.xs
-                wrapMode: Text.Wrap
-                horizontalAlignment: Text.AlignHCenter
+                spacing: 4
+                Label {
+                    Layout.fillWidth: true
+                    text: tile.text
+                    font.weight: Font.DemiBold
+                    color: Theme.text
+                    wrapMode: Text.Wrap
+                }
+                Label {
+                    Layout.fillWidth: true
+                    text: tile.subtitle
+                    color: Theme.muted
+                    font.pixelSize: Theme.xs
+                    wrapMode: Text.Wrap
+                }
             }
         }
         background: Rectangle {
@@ -87,7 +89,7 @@ Sheet {
     contentItem: StackLayout {
         currentIndex: ["choose", "url", "loading", "confirm", "http", "error"].indexOf(dlg.stage)
 
-        RowLayout {
+        ColumnLayout {
             spacing: Theme.grid * 1.5
             Tile {
                 text: qsTr("From clipboard")

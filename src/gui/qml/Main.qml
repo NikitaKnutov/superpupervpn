@@ -4,8 +4,8 @@ import QtQuick.Layouts
 
 ApplicationWindow {
     id: win
-    width: 420
-    height: 760
+    width: 960
+    height: 800
     minimumWidth: 380
     minimumHeight: 640
     visible: !App.startHidden

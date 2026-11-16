@@ -8,6 +8,7 @@
 #include <QSaveFile>
 #include <QSettings>
 #include <QStandardPaths>
+#include <memory>
 
 using namespace Qt::StringLiterals;
 
@@ -53,6 +54,45 @@ void registerUrlSchemes()
 bool startService(bool restart)
 {
     return QProcess::startDetached(u"pkexec"_s, {u"systemctl"_s, restart ? u"restart"_s : u"start"_s, u"superpupervpn-helper.service"_s});
+}
+
+QString updateAssetName(const QString &version)
+{
+    if (QFile::exists(u"/usr/bin/dnf"_s))
+        return u"superpupervpn-%1-1.fc43.x86_64.rpm"_s.arg(version);
+    return u"superpupervpn_%1-1_amd64.deb"_s.arg(version);
+}
+
+void installUpdate(const QString &path, QObject *context, UpdateInstallCallback done)
+{
+    auto *process = new QProcess(context);
+    auto completed = std::make_shared<bool>(false);
+    auto finish = [completed, done](UpdateInstallResult result, const QString &error) {
+        if (*completed)
+            return;
+        *completed = true;
+        done(result, error);
+    };
+    QObject::connect(process, &QProcess::errorOccurred, context, [process, finish](QProcess::ProcessError error) {
+        if (error != QProcess::FailedToStart)
+            return;
+        finish(UpdateInstallResult::Failed, process->errorString());
+        process->deleteLater();
+    });
+    QObject::connect(process, &QProcess::finished, context, [process, finish](int code, QProcess::ExitStatus status) {
+        const QString details = QString::fromUtf8(process->readAllStandardError()).trimmed().left(300);
+        if (code == 0 && status == QProcess::NormalExit) {
+            finish(UpdateInstallResult::Installed, {});
+        } else {
+            finish(UpdateInstallResult::Failed,
+                   details.isEmpty() ? QObject::tr("The package installer failed") : details);
+        }
+        process->deleteLater();
+    });
+    process->setProgram(u"pkexec"_s);
+    process->setArguments(path.endsWith(u".rpm"_s) ? QStringList{u"dnf"_s, u"-y"_s, u"install"_s, path}
+                                                   : QStringList{u"apt-get"_s, u"-y"_s, u"install"_s, path});
+    process->start();
 }
 
 bool reduceMotion()

@@ -6,6 +6,7 @@
 #include "storage.h"
 #include "subscription.h"
 #include "sysproxy.h"
+#include "update.h"
 
 #include <QHash>
 #include <QObject>
@@ -46,6 +47,8 @@ class App : public QObject {
     Q_PROPERTY(QString warning READ warning CONSTANT)
     Q_PROPERTY(int proxyPort READ proxyPort NOTIFY stateChanged)
     Q_PROPERTY(QString version READ version CONSTANT)
+    Q_PROPERTY(QString updateVersion READ updateVersion NOTIFY updateChanged)
+    Q_PROPERTY(bool updateBusy READ updateBusy NOTIFY updateChanged)
     Q_PROPERTY(QVariantMap settings READ settingsMap NOTIFY settingsChanged)
 
 public:
@@ -80,6 +83,8 @@ public:
     QString warning() const { return m_storage->warning; }
     int proxyPort() const { return m_proxyPort; }
     QString version() const;
+    QString updateVersion() const { return m_update.version; }
+    bool updateBusy() const { return m_updateBusy; }
     QVariantMap settingsMap() const { return m_storage->settings.toVariantMap(); }
 
     const Storage &storage() const { return *m_storage; }
@@ -117,6 +122,7 @@ public:
     Q_INVOKABLE bool exportLogs(const QUrl &file);
     Q_INVOKABLE void copyText(const QString &text);
     Q_INVOKABLE void openUrl(const QString &url);
+    Q_INVOKABLE void installUpdate();
     Q_INVOKABLE void quit();
 
 signals:
@@ -127,6 +133,7 @@ signals:
     void testingChanged();
     void helperChanged();
     void diagnosticsChanged();
+    void updateChanged();
     void settingsChanged();
     void importPreviewReady(const QVariantMap &preview);
     void confirmConflicts(const QString &text);
@@ -150,6 +157,7 @@ private:
                            std::function<void(QByteArray body, SubscriptionInfo info, QString error)> done);
     void autoUpdateSubscriptions();
     void checkForUpdates();
+    void downloadUpdate(const QUrl &url, const QString &path, qint64 size, std::function<void(QString error)> done);
     void testProfiles(const QList<Profile> &profiles);
     void resolveCountries();
     void delaysChanged();
@@ -169,6 +177,8 @@ private:
     QMenu *m_trayMenu = nullptr;
     QTimer *m_proxyGuard;
     QTimer *m_hourly;
+    UpdatePackage m_update;
+    bool m_updateBusy = false;
 
     QString m_state = QStringLiteral("disconnected");
     QString m_error, m_helperError, m_search;

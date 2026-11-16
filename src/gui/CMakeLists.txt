@@ -3,6 +3,7 @@ find_package(OpenSSL 3 REQUIRED)
 qt_add_executable(superpupervpn
     main.cpp
     app.cpp app.h
+    update.cpp update.h
     models.cpp models.h
     storage.cpp storage.h
     helperclient.cpp helperclient.h

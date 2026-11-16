@@ -1,11 +1,17 @@
+#include "storage.h"
 #include "theme_tokens.h"
+#include "update.h"
 
 #include <QColor>
+#include <QCryptographicHash>
 #include <QDir>
 #include <QDirIterator>
 #include <QFile>
+#include <QJsonArray>
 #include <QRegularExpression>
 #include <QSet>
+#include <QStandardPaths>
+#include <QTemporaryDir>
 #include <QTest>
 #include <QXmlStreamReader>
 
@@ -127,6 +133,79 @@ private slots:
             }
         }
         QVERIFY2(missing.isEmpty(), qPrintable(u"run the update_translations target: "_s + missing.join(u" | "_s)));
+    }
+
+    void updatePackage()
+    {
+        const QString name = u"SuperPuperVPN-0.3.0-windows-x64.msi"_s;
+        const QString sha256(64, u'a');
+        QJsonObject asset{{u"name"_s, name}, {u"size"_s, 1234}, {u"digest"_s, u"sha256:"_s + sha256},
+                          {u"browser_download_url"_s, u"https://github.com/NikitaKnutov/superpupervpn/releases/download/v0.3.0/"_s + name}};
+        QJsonObject release{{u"tag_name"_s, u"v0.3.0"_s}, {u"assets"_s, QJsonArray{asset}}};
+        const rl::UpdatePackage package = rl::parseUpdatePackage(release, u"0.2.4"_s, name);
+        QCOMPARE(package.version, u"0.3.0"_s);
+        QCOMPARE(package.sha256, sha256);
+        QCOMPARE(package.size, 1234);
+
+        asset[u"digest"_s] = u"sha256:invalid"_s;
+        release[u"assets"_s] = QJsonArray{asset};
+        QVERIFY(rl::parseUpdatePackage(release, u"0.2.4"_s, name).version.isEmpty());
+        asset[u"digest"_s] = u"sha256:"_s + sha256;
+        asset[u"browser_download_url"_s] = u"http://github.com/NikitaKnutov/superpupervpn/"_s + name;
+        release[u"assets"_s] = QJsonArray{asset};
+        QVERIFY(rl::parseUpdatePackage(release, u"0.2.4"_s, name).version.isEmpty());
+        release[u"tag_name"_s] = u"v0.2.4"_s;
+        QVERIFY(rl::parseUpdatePackage(release, u"0.2.4"_s, name).version.isEmpty());
+    }
+
+    void updateVerification()
+    {
+        QTemporaryDir dir;
+        QVERIFY(dir.isValid());
+        const QString path = dir.filePath(u"package"_s);
+        QFile file(path);
+        QVERIFY(file.open(QIODevice::WriteOnly));
+        QCOMPARE(file.write("update"), 6);
+        file.close();
+        rl::UpdatePackage package;
+        package.size = 6;
+        package.sha256 = QString::fromLatin1(QCryptographicHash::hash("update", QCryptographicHash::Sha256).toHex());
+        QVERIFY(rl::verifyUpdatePackage(path, package));
+        QVERIFY(file.open(QIODevice::WriteOnly | QIODevice::Truncate));
+        QCOMPARE(file.write("updatt"), 6);
+        file.close();
+        QVERIFY(!rl::verifyUpdatePackage(path, package));
+    }
+
+    void missingKeyDoesNotReplaceProfiles()
+    {
+        QTemporaryDir temp;
+        QVERIFY(temp.isValid());
+#ifdef Q_OS_WIN
+        qputenv("APPDATA", QFile::encodeName(temp.path()));
+#else
+        qputenv("XDG_CONFIG_HOME", QFile::encodeName(temp.path()));
+        qputenv("DBUS_SESSION_BUS_ADDRESS", (u"unix:path="_s + temp.path() + u"/dbus.sock"_s).toUtf8());
+#endif
+        QCoreApplication::setApplicationName(u"SuperPuperVPN-storage-test"_s);
+        rl::Storage storage;
+        QVERIFY(QDir().mkpath(storage.dir()));
+        const QString profilesPath = storage.dir() + u"/profiles.enc"_s;
+        QFile profiles(profilesPath);
+        QVERIFY(profiles.open(QIODevice::WriteOnly));
+        QCOMPARE(profiles.write("encrypted"), 9);
+        profiles.close();
+
+        QString error;
+        QVERIFY(!storage.load(&error));
+        QVERIFY(!error.isEmpty());
+        QVERIFY(profiles.open(QIODevice::ReadOnly));
+        QCOMPARE(profiles.readAll(), QByteArray("encrypted"));
+#ifdef Q_OS_WIN
+        QVERIFY(!QFile::exists(storage.dir() + u"/key.dpapi"_s));
+#else
+        QVERIFY(!QFile::exists(storage.dir() + u"/key"_s));
+#endif
     }
 };
 

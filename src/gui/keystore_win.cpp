@@ -10,7 +10,7 @@
 using namespace Qt::StringLiterals;
 
 namespace rl {
-QByteArray loadOrCreateKey(const QString &dir, QString *warning)
+QByteArray loadOrCreateKey(const QString &dir, QString *warning, bool hasProfiles)
 {
     Q_UNUSED(warning);
     const QString path = dir + u"/key.dpapi"_s;
@@ -25,6 +25,8 @@ QByteArray loadOrCreateKey(const QString &dir, QString *warning)
         }
         return {};
     }
+    if (hasProfiles)
+        return {};
     QByteArray key(32, Qt::Uninitialized);
     RAND_bytes(reinterpret_cast<unsigned char *>(key.data()), 32);
     DATA_BLOB in{DWORD(key.size()), reinterpret_cast<BYTE *>(key.data())}, out{};

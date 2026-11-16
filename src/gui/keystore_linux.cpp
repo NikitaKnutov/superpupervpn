@@ -30,7 +30,7 @@ QByteArray randomKey()
 
 }
 
-QByteArray loadOrCreateKey(const QString &dir, QString *warning)
+QByteArray loadOrCreateKey(const QString &dir, QString *warning, bool hasProfiles)
 {
     const QString fallback = dir + u"/key"_s;
     const QString fallbackWarning = QCoreApplication::translate("KeyStore", "The keyring is unavailable: the encryption key is stored in a file with 0600 permissions");
@@ -46,6 +46,11 @@ QByteArray loadOrCreateKey(const QString &dir, QString *warning)
         secret_password_free(stored);
         if (key.size() == 32)
             return key;
+    }
+    if (hasProfiles) {
+        if (err)
+            g_error_free(err);
+        return {};
     }
     if (!err) {
         const QByteArray key = randomKey();

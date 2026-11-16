@@ -71,6 +71,30 @@ ScrollView {
         spacing: Theme.grid * 2
 
         Card {
+            visible: App.updateVersion !== ""
+            Layout.fillWidth: true
+            Layout.leftMargin: 16
+            Layout.rightMargin: 16
+            Layout.topMargin: 4
+            RowLayout {
+                width: parent.width
+                Label {
+                    Layout.fillWidth: true
+                    wrapMode: Text.Wrap
+                    text: qsTr("Version %1 is available").arg(App.updateVersion)
+                    font.weight: Font.DemiBold
+                    color: Theme.text
+                }
+                PillButton {
+                    accent: true
+                    enabled: !App.updateBusy
+                    text: App.updateBusy ? qsTr("Updating…") : qsTr("Update")
+                    onClicked: App.installUpdate()
+                }
+            }
+        }
+
+        Card {
             visible: !App.helperReady
             Layout.fillWidth: true
             Layout.leftMargin: 16

@@ -1,3 +1,9 @@
+superpupervpn (0.2.7-1) unstable; urgency=medium
+
+  * New releases are checked on every app launch and hourly
+
+ -- SuperPuperVPN <noreply@superpupervpn.invalid>  Mon, 16 Nov 2026 16:48:37 +0300
+
 superpupervpn (0.2.6-1) unstable; urgency=medium
 
   * VPN reconnects automatically after sleep or network loss

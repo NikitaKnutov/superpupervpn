@@ -156,7 +156,7 @@ private:
     void fetchSubscription(const QString &url, bool allowHttp,
                            std::function<void(QByteArray body, SubscriptionInfo info, QString error)> done);
     void autoUpdateSubscriptions();
-    void checkForUpdates();
+    void checkForUpdates(bool force = false);
     void downloadUpdate(const QUrl &url, const QString &path, qint64 size, std::function<void(QString error)> done);
     void testProfiles(const QList<Profile> &profiles);
     void resolveCountries();

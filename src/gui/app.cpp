@@ -155,7 +155,7 @@ void App::start(bool autostarted)
     QTimer::singleShot(3000, this, [this] { recoverSystemProxy({}); });
     QTimer::singleShot(5000, this, [this] {
         autoUpdateSubscriptions();
-        checkForUpdates();
+        checkForUpdates(true);
     });
     m_hourly->start();
 }
@@ -963,10 +963,10 @@ void App::quit()
     QCoreApplication::quit();
 }
 
-void App::checkForUpdates()
+void App::checkForUpdates(bool force)
 {
     const qint64 now = QDateTime::currentSecsSinceEpoch();
-    if (m_updateBusy || now - m_storage->settings.value(u"lastUpdateCheck"_s).toInteger() < 24 * 3600)
+    if (m_updateBusy || (!force && now - m_storage->settings.value(u"lastUpdateCheck"_s).toInteger() < 3600))
         return;
     QNetworkRequest req(QUrl(u"https://api.github.com/repos/" SUPERPUPERVPN_GITHUB_REPO "/releases/latest"_s));
     req.setHeader(QNetworkRequest::UserAgentHeader, u"SuperPuperVPN/%1 (%2)"_s.arg(version(), gui::osName()));

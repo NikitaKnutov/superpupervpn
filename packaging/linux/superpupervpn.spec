@@ -1,7 +1,7 @@
 %global mihomo_version v1.19.32
 
 Name:           superpupervpn
-Version:        0.2.4
+Version:        0.2.5
 Release:        1%{?dist}
 Summary:        SuperPuperVPN, a VLESS/REALITY desktop client
 License:        GPL-3.0-or-later AND GPL-3.0-only AND OFL-1.1 AND MIT
@@ -76,6 +76,11 @@ fi
 %{_datadir}/icons/hicolor/scalable/apps/superpupervpn.svg
 
 %changelog
+* Mon Nov 16 2026 SuperPuperVPN <noreply@superpupervpn.invalid> - 0.2.5-1
+- Larger default window and a cleaner import menu
+- Optional in-app updates install verified MSI, RPM and DEB packages
+- Saved profiles stay untouched when the OS keyring is unavailable at startup
+
 * Tue Nov 03 2026 SuperPuperVPN <noreply@superpupervpn.invalid> - 0.2.4-1
 - Subscriptions from providers requiring a v2rayNG client now load correctly
 

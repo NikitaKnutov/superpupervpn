@@ -1,3 +1,11 @@
+superpupervpn (0.2.5-1) unstable; urgency=medium
+
+  * Larger default window and a cleaner import menu
+  * Optional in-app updates install verified MSI, RPM and DEB packages
+  * Saved profiles stay untouched when the OS keyring is unavailable at startup
+
+ -- SuperPuperVPN <noreply@superpupervpn.invalid>  Mon, 16 Nov 2026 12:03:59 +0300
+
 superpupervpn (0.2.4-1) unstable; urgency=medium
 
   * Subscriptions from providers requiring a v2rayNG client now load correctly

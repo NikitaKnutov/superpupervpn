@@ -55,7 +55,7 @@
         <translation>не удалось запустить ядро: %1</translation>
     </message>
     <message>
-        <location line="+57"/>
+        <location line="+52"/>
         <source>the core did not respond within 15 s</source>
         <translation>ядро не ответило за 15 с</translation>
     </message>
@@ -81,7 +81,7 @@
 <context>
     <name>Helper</name>
     <message>
-        <location filename="../src/helper/helper.cpp" line="+108"/>
+        <location filename="../src/helper/helper.cpp" line="+111"/>
         <source>[test] </source>
         <translation>[проверка] </translation>
     </message>
@@ -126,7 +126,7 @@
         <translation>небезопасный профиль требует явного согласия</translation>
     </message>
     <message>
-        <location line="+53"/>
+        <location line="+57"/>
         <source>no free local port</source>
         <translation>нет свободного локального порта</translation>
     </message>
@@ -136,42 +136,42 @@
         <translation>неизвестный параметр ссылки: %1</translation>
     </message>
     <message>
-        <location line="+16"/>
+        <location line="+21"/>
         <source>server does not respond (%1). Try another one: Servers → Check all</source>
         <translation>сервер не отвечает (%1). Попробуйте другой: «Серверы» → «Проверить все»</translation>
     </message>
     <message>
-        <location line="+8"/>
+        <location line="+15"/>
         <source>another VPN is on (%1): traffic may bypass SuperPuperVPN</source>
         <translation>включён другой VPN (%1): трафик может идти мимо SuperPuperVPN</translation>
     </message>
     <message>
-        <location line="+17"/>
+        <location line="+16"/>
         <source>the core did not start</source>
         <translation>ядро не запустилось</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+7"/>
         <source>the core exited: %1</source>
         <translation>ядро завершилось: %1</translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="+3"/>
+        <source>connection lost, retrying in 30 s</source>
+        <translation>соединение потеряно, повторная попытка через 30 с</translation>
+    </message>
+    <message>
+        <location line="+6"/>
         <source>the core exited, attempt %1 of 5: %2</source>
         <translation>ядро завершилось, попытка %1 из 5: %2</translation>
     </message>
     <message>
         <location line="+17"/>
-        <source>the network interface changed, restarting the core</source>
-        <translation>сменился сетевой интерфейс — перезапускаю ядро</translation>
+        <source>the network changed, reconnecting</source>
+        <translation>сеть изменилась, переподключаемся</translation>
     </message>
     <message>
-        <location line="+4"/>
-        <source>the network changed, resetting connections</source>
-        <translation>сеть изменилась — сбрасываю соединения</translation>
-    </message>
-    <message>
-        <location line="+8"/>
+        <location line="+7"/>
         <source>a latency test is already running</source>
         <translation>проверка задержки уже идёт</translation>
     </message>

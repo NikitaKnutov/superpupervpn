@@ -27,7 +27,6 @@ public:
     bool isRunning() const;
     bool isReady() const { return m_ready; }
     QNetworkReply *get(const QString &pathAndQuery, int timeoutMs);
-    QNetworkReply *del(const QString &path);
     void watchTraffic();
     Masker masker;
 

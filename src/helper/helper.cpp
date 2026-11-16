@@ -87,7 +87,8 @@ Helper::Helper(QObject *parent)
       m_test(new CoreProcess(u"test"_s, this)),
       m_retry(new QTimer(this)),
       m_stable(new QTimer(this)),
-      m_netDebounce(new QTimer(this))
+      m_netDebounce(new QTimer(this)),
+      m_health(new QTimer(this))
 {
     m_retry->setSingleShot(true);
     connect(m_retry, &QTimer::timeout, this, &Helper::startCore);
@@ -97,6 +98,8 @@ Helper::Helper(QObject *parent)
     m_netDebounce->setSingleShot(true);
     m_netDebounce->setInterval(3000);
     connect(m_netDebounce, &QTimer::timeout, this, &Helper::onNetworkChanged);
+    m_health->setInterval(15000);
+    connect(m_health, &QTimer::timeout, this, [this] { checkConnection(false); });
 
     connect(m_server, &HelperServer::clientReady, this, &Helper::onClient);
     connect(m_core, &CoreProcess::ready, this, &Helper::onCoreReady);
@@ -313,6 +316,7 @@ std::optional<FieldError> Helper::connectCore(const QJsonObject &params)
     m_settings = s;
     m_maskHosts = params.value(u"maskHosts"_s).toBool(true);
     m_wanted = true;
+    m_wasConnected = false;
     m_attempts = 0;
     QTimer::singleShot(0, this, &Helper::startCore);
     return std::nullopt;
@@ -322,8 +326,10 @@ void Helper::disconnectCore()
 {
     const bool wasRunning = m_core->isRunning();
     m_wanted = false;
+    m_wasConnected = false;
     m_retry->stop();
     m_stable->stop();
+    m_health->stop();
     m_core->stop();
     if (wasRunning)
         platform::cleanupStaleNetwork();
@@ -335,6 +341,7 @@ void Helper::startCore()
     if (!m_wanted)
         return;
     m_retry->stop();
+    m_health->stop();
     const bool restarting = m_core->isRunning();
     if (restarting)
         m_core->stop();
@@ -376,9 +383,14 @@ void Helper::startCore()
 
 void Helper::onCoreReady()
 {
+    checkConnection(true);
+}
+
+void Helper::checkConnection(bool initial)
+{
     QUrlQuery q{{u"url"_s, kDefaultDelayUrl}, {u"timeout"_s, u"5000"_s}};
     QNetworkReply *r = m_core->get(u"/proxies/proxy/delay?"_s + q.toString(QUrl::FullyEncoded), 8000);
-    connect(r, &QNetworkReply::finished, this, [this, r] {
+    connect(r, &QNetworkReply::finished, this, [this, r, initial] {
         r->deleteLater();
         if (!m_wanted || !m_core->isReady())
             return;
@@ -387,14 +399,19 @@ void Helper::onCoreReady()
             const QString why = QCoreApplication::translate("Helper", "server does not respond (%1). Try another one: Servers → Check all")
                                     .arg(o.value(u"message"_s).toString(r->errorString()));
             log(u"helper"_s, u"warning"_s, why);
+            m_health->stop();
             m_core->stop();
             onCoreFailed(m_attempts == 0, why);
             return;
         }
+        m_core->watchTraffic();
+        if (!initial)
+            return;
+        m_wasConnected = true;
+        m_stable->start();
+        m_health->start();
         if (const QStringList other = platform::conflictingAdapters(); m_settings.mode == u"tun" && !other.isEmpty())
             log(u"helper"_s, u"warning"_s, QCoreApplication::translate("Helper", "another VPN is on (%1): traffic may bypass SuperPuperVPN").arg(other.join(u", "_s)));
-        m_stable->start();
-        m_core->watchTraffic();
         setState(u"connected"_s, {{u"profileId"_s, m_profile.id}, {u"mode"_s, m_settings.mode},
                                   {u"proxyPort"_s, m_proxyPort}, {u"delay"_s, o.value(u"delay"_s)},
                                   {u"since"_s, QDateTime::currentMSecsSinceEpoch()}});
@@ -406,16 +423,23 @@ void Helper::onCoreFailed(bool beforeReady, const QString &error)
     if (!m_wanted)
         return;
     m_stable->stop();
-    if (beforeReady && m_attempts == 0) {
+    m_health->stop();
+    if (beforeReady && m_attempts == 0 && !m_wasConnected) {
         m_wanted = false;
         platform::cleanupStaleNetwork();
         setState(u"error"_s, {{u"message"_s, error.isEmpty() ? QCoreApplication::translate("Helper", "the core did not start") : error}});
         return;
     }
     if (m_attempts >= 5) {
-        m_wanted = false;
-        platform::cleanupStaleNetwork();
-        setState(u"error"_s, {{u"message"_s, QCoreApplication::translate("Helper", "the core exited: %1").arg(error)}});
+        if (!m_wasConnected) {
+            m_wanted = false;
+            platform::cleanupStaleNetwork();
+            setState(u"error"_s, {{u"message"_s, QCoreApplication::translate("Helper", "the core exited: %1").arg(error)}});
+            return;
+        }
+        log(u"helper"_s, u"warning"_s, QCoreApplication::translate("Helper", "connection lost, retrying in 30 s"));
+        setState(u"connecting"_s, {{u"profileId"_s, m_profile.id}, {u"mode"_s, m_settings.mode}, {u"attempt"_s, m_attempts}});
+        m_retry->start(30000);
         return;
     }
     ++m_attempts;
@@ -433,16 +457,11 @@ void Helper::setState(const QString &state, QJsonObject extra)
 
 void Helper::onNetworkChanged()
 {
-    if (!m_wanted || !m_core->isReady())
+    if (!m_wanted)
         return;
-    if (m_settings.mode == u"proxy" && platform::physicalInterface() != m_iface) {
-        log(u"helper"_s, u"info"_s, QCoreApplication::translate("Helper", "the network interface changed, restarting the core"));
-        startCore();
-        return;
-    }
-    log(u"helper"_s, u"info"_s, QCoreApplication::translate("Helper", "the network changed, resetting connections"));
-    QNetworkReply *r = m_core->del(u"/connections"_s);
-    connect(r, &QNetworkReply::finished, r, &QObject::deleteLater);
+    m_attempts = 0;
+    log(u"helper"_s, u"info"_s, QCoreApplication::translate("Helper", "the network changed, reconnecting"));
+    startCore();
 }
 
 void Helper::testDelay(QLocalSocket *s, const QJsonValue &id, const QJsonObject &params)

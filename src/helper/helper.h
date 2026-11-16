@@ -47,6 +47,7 @@ private:
     void disconnectCore();
     void startCore();
     void onCoreReady();
+    void checkConnection(bool initial);
     void onCoreFailed(bool beforeReady, const QString &error);
     void setState(const QString &state, QJsonObject extra = {});
     void testDelay(QLocalSocket *s, const QJsonValue &id, const QJsonObject &params);
@@ -63,6 +64,7 @@ private:
     QString m_coreVersion;
 
     bool m_wanted = false;
+    bool m_wasConnected = false;
     Profile m_profile;
     CoreSettings m_settings;
     bool m_maskHosts = true;
@@ -72,6 +74,7 @@ private:
     QTimer *m_retry;
     QTimer *m_stable;
     QTimer *m_netDebounce;
+    QTimer *m_health;
     QObject *m_delayJob = nullptr;
 };
 

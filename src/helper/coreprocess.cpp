@@ -171,11 +171,6 @@ QNetworkReply *CoreProcess::get(const QString &pathAndQuery, int timeoutMs)
     return m_nam->get(apiRequest(m_rt, pathAndQuery, timeoutMs));
 }
 
-QNetworkReply *CoreProcess::del(const QString &path)
-{
-    return m_nam->deleteResource(apiRequest(m_rt, path, 3000));
-}
-
 void CoreProcess::probe()
 {
     if (!isRunning() || m_ready)

@@ -8,7 +8,7 @@ ApplicationWindow {
     height: 800
     minimumWidth: 380
     minimumHeight: 640
-    visible: !App.startHidden
+    visible: !App.startHidden || !App.trayAvailable
     title: "SuperPuperVPN"
     color: Theme.bg
 

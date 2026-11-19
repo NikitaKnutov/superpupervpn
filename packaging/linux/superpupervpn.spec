@@ -1,7 +1,7 @@
 %global mihomo_version v1.19.32
 
 Name:           superpupervpn
-Version:        0.2.8
+Version:        0.2.9
 Release:        1%{?dist}
 Summary:        SuperPuperVPN, a VLESS/REALITY desktop client
 License:        GPL-3.0-or-later AND GPL-3.0-only AND OFL-1.1 AND MIT
@@ -76,6 +76,9 @@ fi
 %{_datadir}/icons/hicolor/scalable/apps/superpupervpn.svg
 
 %changelog
+* Thu Nov 19 2026 SuperPuperVPN <noreply@superpupervpn.invalid> - 0.2.9-1
+- Core restarts only after three consecutive connection check failures
+
 * Tue Nov 17 2026 SuperPuperVPN <noreply@superpupervpn.invalid> - 0.2.8-1
 - Autostart opens the window on desktops without a system tray
 

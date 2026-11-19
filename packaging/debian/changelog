@@ -1,3 +1,9 @@
+superpupervpn (0.2.9-1) unstable; urgency=medium
+
+  * Core restarts only after three consecutive connection check failures
+
+ -- SuperPuperVPN <noreply@superpupervpn.invalid>  Thu, 19 Nov 2026 13:21:29 +0300
+
 superpupervpn (0.2.8-1) unstable; urgency=medium
 
   * Autostart opens the window on desktops without a system tray

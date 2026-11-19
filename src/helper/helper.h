@@ -75,6 +75,7 @@ private:
     QTimer *m_stable;
     QTimer *m_netDebounce;
     QTimer *m_health;
+    int m_healthFailures = 0;
     QObject *m_delayJob = nullptr;
 };
 

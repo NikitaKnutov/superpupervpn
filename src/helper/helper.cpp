@@ -342,6 +342,7 @@ void Helper::startCore()
         return;
     m_retry->stop();
     m_health->stop();
+    m_healthFailures = 0;
     const bool restarting = m_core->isRunning();
     if (restarting)
         m_core->stop();
@@ -396,6 +397,8 @@ void Helper::checkConnection(bool initial)
             return;
         const QJsonObject o = QJsonDocument::fromJson(r->readAll()).object();
         if (r->error() != QNetworkReply::NoError || !o.contains(u"delay"_s)) {
+            if (!initial && ++m_healthFailures < 3)
+                return;
             const QString why = QCoreApplication::translate("Helper", "server does not respond (%1). Try another one: Servers → Check all")
                                     .arg(o.value(u"message"_s).toString(r->errorString()));
             log(u"helper"_s, u"warning"_s, why);
@@ -404,6 +407,7 @@ void Helper::checkConnection(bool initial)
             onCoreFailed(m_attempts == 0, why);
             return;
         }
+        m_healthFailures = 0;
         m_core->watchTraffic();
         if (!initial)
             return;

@@ -210,6 +210,10 @@ New-ItemProperty -Path 'HKLM:\SOFTWARE\Policies\SuperPuperVPN' -Name AllowTun -P
   users could point their apps at it; the service log is visible to every user's app (server addresses are hidden
   by default).
 
+A build for one site without offering it to everyone: push a tag with a suffix, e.g. `git tag v0.2.9-rds1 && git push
+origin v0.2.9-rds1`. CI publishes it as a GitHub pre-release, which the app's update check ignores. The part before
+`-` must equal the version in `CMakeLists.txt`.
+
 Manual check on the server, with the policy set and two ordinary users signed in over RDP:
 
 1. User A opens the app: no TUN switch on the main screen, *Settings → Default mode* offers System proxy only, and

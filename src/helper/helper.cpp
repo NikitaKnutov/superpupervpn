@@ -105,7 +105,7 @@ Helper::Helper(QObject *parent)
     connect(m_core, &CoreProcess::ready, this, &Helper::onCoreReady);
     connect(m_core, &CoreProcess::exited, this, &Helper::onCoreFailed);
     connect(m_core, &CoreProcess::logLine, this, [this](const QString &l, const QString &m) { log(u"core"_s, l, m); });
-    connect(m_core, &CoreProcess::traffic, this, [this](const QJsonObject &t) { broadcast(u"traffic"_s, t); });
+    connect(m_core, &CoreProcess::traffic, this, [this](const QJsonObject &t) { broadcast(u"traffic"_s, t, true); });
     connect(m_test, &CoreProcess::logLine, this, [this](const QString &l, const QString &m) {
         if (l != u"info" && l != u"debug")
             log(u"core"_s, l, QCoreApplication::translate("Helper", "[test] ") + m);
@@ -145,13 +145,25 @@ void Helper::shutdown()
     disconnectCore();
 }
 
-void Helper::onClient(QLocalSocket *s, const QString &peer)
+void Helper::onClient(QLocalSocket *s, const QString &peer, const QString &owner)
 {
-    m_clients.insert(s, Client{QByteArray(), peer});
+    m_clients.insert(s, Client{QByteArray(), peer, owner});
     connect(s, &QLocalSocket::readyRead, this, [this, s] { onReadyRead(s); });
-    connect(s, &QObject::destroyed, this, [this, s] { m_clients.remove(s); });
-    connect(s, &QLocalSocket::disconnected, this, [this, s] { m_clients.remove(s); });
+    connect(s, &QObject::destroyed, this, [this, s] { onClientGone(s); });
+    connect(s, &QLocalSocket::disconnected, this, [this, s] { onClientGone(s); });
     onReadyRead(s);
+}
+
+void Helper::onClientGone(QLocalSocket *s)
+{
+    const auto it = m_clients.constFind(s);
+    if (it == m_clients.cend())
+        return;
+    const QString owner = it->owner;
+    m_clients.erase(it);
+    // The owner's last app went away (logged off or crashed): the others may take over now, so tell them.
+    if (m_wanted && owner == m_owner && !usedByOther(QString()))
+        broadcastState();
 }
 
 void Helper::onReadyRead(QLocalSocket *s)
@@ -208,11 +220,47 @@ void Helper::notify(QLocalSocket *s, const QString &method, const QJsonObject &p
     send(s, {{u"jsonrpc"_s, u"2.0"_s}, {u"method"_s, method}, {u"params"_s, params}});
 }
 
-void Helper::broadcast(const QString &method, const QJsonObject &params)
+void Helper::broadcast(const QString &method, const QJsonObject &params, bool ownerOnly)
+{
+    for (auto it = m_clients.begin(); it != m_clients.end(); ++it)
+        if (it->subscribed && (!ownerOnly || m_owner.isEmpty() || it->owner == m_owner))
+            notify(it.key(), method, params);
+}
+
+void Helper::broadcastState()
 {
     for (auto it = m_clients.begin(); it != m_clients.end(); ++it)
         if (it->subscribed)
-            notify(it.key(), method, params);
+            notify(it.key(), u"state"_s, stateFor(it->owner));
+}
+
+bool Helper::usedByOther(const QString &owner) const
+{
+    if (!m_wanted || m_owner.isEmpty() || owner == m_owner)
+        return false;
+    return std::any_of(m_clients.cbegin(), m_clients.cend(), [this](const Client &c) { return c.owner == m_owner; });
+}
+
+QJsonObject Helper::stateFor(const QString &owner) const
+{
+    if (m_owner.isEmpty() || owner == m_owner)
+        return m_state;
+    // Someone else's connection: their proxy port, server and errors are not this user's business, and an app that
+    // saw "connected" here would point this user's system proxy at it.
+    QJsonObject other{{u"state"_s, u"disconnected"_s}};
+    if (m_wanted)
+        other[u"usedByOther"_s] = true;
+    return other;
+}
+
+AdminPolicy Helper::policy()
+{
+    QString error;
+    const AdminPolicy p = platform::adminPolicy(&error);
+    if (error != m_policyError && !error.isEmpty())
+        log(u"helper"_s, u"error"_s, error);
+    m_policyError = error;
+    return p;
 }
 
 void Helper::log(const QString &source, const QString &level, const QString &message)
@@ -246,22 +294,26 @@ void Helper::dispatch(QLocalSocket *s, const QJsonObject &req)
             return;
         }
         reply(s, id, helloResult());
-    } else if (method == u"connect") {
-        if (const auto e = connectCore(params))
-            replyError(s, id, InvalidParams, e->text(), e->field);
-        else
+    } else if (method == u"connect" || method == u"disconnect") {
+        const QString owner = m_clients.value(s).owner;
+        if (usedByOther(owner)) {
+            replyError(s, id, Busy, QCoreApplication::translate("Helper", "SuperPuperVPN is already in use by another user on this computer"));
+        } else if (method == u"disconnect") {
+            disconnectCore();
             reply(s, id, {{u"ok"_s, true}});
-    } else if (method == u"disconnect") {
-        disconnectCore();
-        reply(s, id, {{u"ok"_s, true}});
+        } else if (const auto e = connectCore(params, owner)) {
+            replyError(s, id, InvalidParams, e->text(), e->field);
+        } else {
+            reply(s, id, {{u"ok"_s, true}});
+        }
     } else if (method == u"status") {
-        reply(s, id, m_state);
+        reply(s, id, stateFor(m_clients.value(s).owner));
     } else if (method == u"subscribe") {
         m_clients[s].subscribed = true;
         QJsonArray logs;
         for (const QJsonObject &o : std::as_const(m_backlog))
             logs << o;
-        reply(s, id, {{u"state"_s, m_state}, {u"logs"_s, logs}});
+        reply(s, id, {{u"state"_s, stateFor(m_clients.value(s).owner)}, {u"logs"_s, logs}});
     } else if (method == u"testDelay") {
         testDelay(s, id, params);
     } else if (method == u"diagnostics") {
@@ -282,14 +334,13 @@ void Helper::dispatch(QLocalSocket *s, const QJsonObject &req)
     }
 }
 
-QJsonObject Helper::helloResult() const
+QJsonObject Helper::helloResult()
 {
     return {{u"helperVersion"_s, QStringLiteral(SUPERPUPERVPN_VERSION)}, {u"coreVersion"_s, m_coreVersion},
-            {u"protocol"_s, ipc::kProtocolMajor},
-            {u"capabilities"_s, QJsonArray{u"tun"_s, u"proxy"_s, u"testDelay"_s, u"diagnostics"_s, u"stopOtherVpns"_s}}};
+            {u"protocol"_s, ipc::kProtocolMajor}, {u"capabilities"_s, helperCapabilities(policy())}};
 }
 
-std::optional<FieldError> Helper::connectCore(const QJsonObject &params)
+std::optional<FieldError> Helper::connectCore(const QJsonObject &params, const QString &owner)
 {
     const QJsonObject pj = params.value(u"profile"_s).toObject();
     if (const auto e = rejectUnknownKeys(pj))
@@ -311,7 +362,10 @@ std::optional<FieldError> Helper::connectCore(const QJsonObject &params)
     s.logLevel = params.value(u"logLevel"_s).toString(s.logLevel);
     if (const auto e = validate(s))
         return e;
+    if (const auto e = checkPolicy(policy(), s.mode))
+        return e;
 
+    m_owner = owner;
     m_profile = p;
     m_settings = s;
     m_maskHosts = params.value(u"maskHosts"_s).toBool(true);
@@ -333,6 +387,7 @@ void Helper::disconnectCore()
     m_core->stop();
     if (wasRunning)
         platform::cleanupStaleNetwork();
+    m_owner.clear();
     setState(u"disconnected"_s);
 }
 
@@ -349,7 +404,10 @@ void Helper::startCore()
     platform::cleanupStaleNetwork();
 
     QString error;
-    if (!platform::ensurePrivateDir(platform::dataDir(), &error) || !verifyCore(&error)) {
+    // The policy may have changed since connect: a reconnect must not bring TUN back.
+    if (const auto e = checkPolicy(policy(), m_settings.mode))
+        error = e->text();
+    if (!error.isEmpty() || !platform::ensurePrivateDir(platform::dataDir(), &error) || !verifyCore(&error)) {
         m_wanted = false;
         log(u"helper"_s, u"error"_s, error);
         setState(u"error"_s, {{u"message"_s, error}});
@@ -456,7 +514,7 @@ void Helper::setState(const QString &state, QJsonObject extra)
 {
     extra[u"state"_s] = state;
     m_state = extra;
-    broadcast(u"state"_s, m_state);
+    broadcastState();
 }
 
 void Helper::onNetworkChanged()

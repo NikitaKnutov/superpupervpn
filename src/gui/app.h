@@ -39,6 +39,8 @@ class App : public QObject {
     Q_PROPERTY(bool testing READ testing NOTIFY testingChanged)
     Q_PROPERTY(bool helperReady READ helperReady NOTIFY helperChanged)
     Q_PROPERTY(QString helperError READ helperError NOTIFY helperChanged)
+    Q_PROPERTY(bool tunAllowed READ tunAllowed NOTIFY helperChanged)
+    Q_PROPERTY(bool usedByOther READ usedByOther NOTIFY stateChanged)
     Q_PROPERTY(QVariantMap diagnostics READ diagnostics NOTIFY diagnosticsChanged)
     Q_PROPERTY(bool darkTheme READ darkTheme NOTIFY settingsChanged)
     Q_PROPERTY(QVariantMap colors READ colors NOTIFY settingsChanged)
@@ -75,6 +77,8 @@ public:
     bool testing() const { return m_testing; }
     bool helperReady() const;
     QString helperError() const { return m_helperError; }
+    bool tunAllowed() const;
+    bool usedByOther() const { return m_usedByOther; }
     QVariantMap diagnostics() const { return m_diag; }
     bool darkTheme() const;
     QVariantMap colors() const;
@@ -148,6 +152,7 @@ private:
     void profilesChanged();
     void rebuildMasker();
     void doConnect();
+    void enforceTunPolicy();
     void onHelperState(const QJsonObject &s);
     void onSubscribed(const QJsonObject &r);
     void applySystemProxy();
@@ -186,6 +191,7 @@ private:
     int m_proxyPort = 0;
     bool m_proxyApplied = false;
     bool m_testing = false;
+    bool m_usedByOther = false;
     bool m_reduceMotion = false;
     bool m_connectWhenReady = false;
     bool m_quitting = false;

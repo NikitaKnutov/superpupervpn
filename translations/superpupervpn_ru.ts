@@ -86,12 +86,12 @@
         <translation>[проверка] </translation>
     </message>
     <message>
-        <location line="+61"/>
+        <location line="+73"/>
         <source>invalid JSON</source>
         <translation>неверный JSON</translation>
     </message>
     <message>
-        <location line="+64"/>
+        <location line="+100"/>
         <source>invalid request</source>
         <translation>неверный запрос</translation>
     </message>
@@ -101,7 +101,12 @@
         <translation>Версии приложения и службы несовместимы — переустановите SuperPuperVPN</translation>
     </message>
     <message>
-        <location line="+29"/>
+        <location line="+7"/>
+        <source>SuperPuperVPN is already in use by another user on this computer</source>
+        <translation>SuperPuperVPN уже использует другой пользователь этого компьютера</translation>
+    </message>
+    <message>
+        <location line="+26"/>
         <source>unknown language</source>
         <translation>неизвестный язык</translation>
     </message>
@@ -116,7 +121,7 @@
         <translation>неизвестный метод</translation>
     </message>
     <message>
-        <location line="+20"/>
+        <location line="+19"/>
         <source>invalid profile ID</source>
         <translation>неверный идентификатор профиля</translation>
     </message>
@@ -126,7 +131,7 @@
         <translation>небезопасный профиль требует явного согласия</translation>
     </message>
     <message>
-        <location line="+57"/>
+        <location line="+65"/>
         <source>no free local port</source>
         <translation>нет свободного локального порта</translation>
     </message>
@@ -136,12 +141,12 @@
         <translation>неизвестный параметр ссылки: %1</translation>
     </message>
     <message>
-        <location line="+21"/>
+        <location line="+23"/>
         <source>server does not respond (%1). Try another one: Servers → Check all</source>
         <translation>сервер не отвечает (%1). Попробуйте другой: «Серверы» → «Проверить все»</translation>
     </message>
     <message>
-        <location line="+15"/>
+        <location line="+16"/>
         <source>another VPN is on (%1): traffic may bypass SuperPuperVPN</source>
         <translation>включён другой VPN (%1): трафик может идти мимо SuperPuperVPN</translation>
     </message>
@@ -281,6 +286,16 @@
         <location line="+1"/>
         <source>Diagnostics</source>
         <translation>Диагностика</translation>
+    </message>
+    <message>
+        <location line="+12"/>
+        <source>SuperPuperVPN is in use by another user on this computer</source>
+        <translation>SuperPuperVPN использует другой пользователь этого компьютера</translation>
+    </message>
+    <message>
+        <location line="+12"/>
+        <source>System proxy mode. TUN is disabled by the administrator</source>
+        <translation>Режим системного прокси. TUN отключён администратором</translation>
     </message>
     <message>
         <location line="+8"/>
@@ -868,7 +883,7 @@ This may break the connection or let part of the traffic bypass the tunnel.</sou
         <translation>папка %1 доступна на запись другим пользователям</translation>
     </message>
     <message>
-        <location line="+192"/>
+        <location line="+205"/>
         <source>Not allowed to control the service</source>
         <translation>Нет прав на управление службой</translation>
     </message>
@@ -903,9 +918,28 @@ This may break the connection or let part of the traffic bypass the tunnel.</sou
         <translation>папка %1 доступна на запись (%2)</translation>
     </message>
     <message>
-        <location line="+145"/>
+        <location line="+132"/>
+        <source>the AllowTun policy value is not a DWORD, TUN is disabled until it is fixed</source>
+        <translation>значение политики AllowTun не DWORD, TUN отключён, пока его не исправят</translation>
+    </message>
+    <message>
+        <location line="+30"/>
         <source>failed to create the pipe \\.\pipe\superpupervpn-helper</source>
         <translation>не удалось создать канал \\.\pipe\superpupervpn-helper</translation>
+    </message>
+</context>
+<context>
+    <name>Policy</name>
+    <message>
+        <location filename="../src/core/policy.cpp" line="+19"/>
+        <location filename="../src/helper/platform_linux.cpp" line="-60"/>
+        <source>the policy file is invalid, TUN is disabled until it is fixed</source>
+        <translation>файл политики повреждён, TUN отключён, пока его не исправят</translation>
+    </message>
+    <message>
+        <location line="+20"/>
+        <source>TUN is disabled by the administrator. Use System proxy mode</source>
+        <translation>TUN отключён администратором. Используйте режим системного прокси</translation>
     </message>
 </context>
 <context>
@@ -1460,11 +1494,17 @@ This may break the connection or let part of the traffic bypass the tunnel.</sou
     </message>
     <message>
         <location line="+0"/>
+        <location line="+0"/>
         <source>System proxy</source>
         <translation>Системный прокси</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location line="+12"/>
+        <source>TUN is disabled by the administrator</source>
+        <translation>TUN отключён администратором</translation>
+    </message>
+    <message>
+        <location line="+4"/>
         <source>Update subscriptions</source>
         <translation>Обновлять подписки</translation>
     </message>
@@ -1575,7 +1615,7 @@ This may break the connection or let part of the traffic bypass the tunnel.</sou
         <translation>DoH-резолвер (через подключение)</translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location line="+11"/>
         <source>TUN MTU (0 = default)</source>
         <translation>MTU TUN (0 — по умолчанию)</translation>
     </message>
@@ -1673,7 +1713,7 @@ This may break the connection or let part of the traffic bypass the tunnel.</sou
 <context>
     <name>rl::App</name>
     <message>
-        <location filename="../src/gui/app.cpp" line="+110"/>
+        <location filename="../src/gui/app.cpp" line="+111"/>
         <source>service: </source>
         <translation>служба: </translation>
     </message>
@@ -1698,7 +1738,17 @@ This may break the connection or let part of the traffic bypass the tunnel.</sou
         <translation>Неверная ссылка superpupervpn://</translation>
     </message>
     <message>
-        <location line="+131"/>
+        <location line="+101"/>
+        <source>TUN is disabled by the administrator</source>
+        <translation>TUN отключён администратором</translation>
+    </message>
+    <message>
+        <location line="+37"/>
+        <source>TUN is disabled by the administrator, switched to System proxy mode</source>
+        <translation>TUN отключён администратором, включён режим системного прокси</translation>
+    </message>
+    <message>
+        <location line="+16"/>
         <source>The service is not running</source>
         <translation>Служба не запущена</translation>
     </message>
@@ -1736,7 +1786,7 @@ This may break the connection or let part of the traffic bypass the tunnel.</sou
         <translation>Выключено: %1</translation>
     </message>
     <message>
-        <location line="+149"/>
+        <location line="+150"/>
         <source>the system proxy was restored after a crash</source>
         <translation>системный прокси восстановлен после аварийного завершения</translation>
     </message>
@@ -1901,7 +1951,7 @@ This may break the connection or let part of the traffic bypass the tunnel.</sou
         <translation>TUN</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+8"/>
         <source>Server</source>
         <translation>Сервер</translation>
     </message>

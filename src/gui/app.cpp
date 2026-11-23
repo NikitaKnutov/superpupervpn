@@ -86,6 +86,7 @@ App::App(Storage *storage, bool startHidden, QObject *parent)
         emit helperChanged();
         if (ready) {
             m_helperError.clear();
+            enforceTunPolicy();
             runDiagnostics();
             if (std::exchange(m_connectWhenReady, false))
                 connectNow();
@@ -277,6 +278,11 @@ void App::setSetting(const QString &key, const QVariant &value)
             return;
         }
     }
+    if (key == u"mode" && v == u"tun"_s && !tunAllowed()) {
+        emit toast(tr("TUN is disabled by the administrator"));
+        emit settingsChanged();
+        return;
+    }
     if (key == u"language" && !setLanguage(v.toString()))
         return;
     s[key] = v;
@@ -294,6 +300,24 @@ void App::setSetting(const QString &key, const QVariant &value)
     emit settingsChanged();
     if (coreKeys.contains(key) && (m_state == u"connected" || m_state == u"connecting"))
         doConnect();
+    updateTray();
+}
+
+bool App::tunAllowed() const
+{
+    // Until the service answers, nothing is known; it enforces the policy itself anyway.
+    const QJsonObject hello = m_helper->hello();
+    return hello.isEmpty() || hello.value(u"capabilities"_s).toArray().contains(u"tun"_s);
+}
+
+void App::enforceTunPolicy()
+{
+    if (tunAllowed() || m_storage->settings.value(u"mode"_s) != u"tun"_s)
+        return;
+    m_storage->settings[u"mode"_s] = u"proxy"_s;
+    m_storage->saveSettings();
+    appLog(u"info"_s, tr("TUN is disabled by the administrator, switched to System proxy mode"));
+    emit settingsChanged();
     updateTray();
 }
 
@@ -441,6 +465,7 @@ void App::onHelperState(const QJsonObject &s)
     m_error = s.value(u"message"_s).toString();
     m_since = m_state == u"connected" ? s.value(u"since"_s).toInteger() : 0;
     m_proxyPort = s.value(u"proxyPort"_s).toInt();
+    m_usedByOther = s.value(u"usedByOther"_s).toBool();
     const bool proxyMode = s.value(u"mode"_s) == u"proxy"_s;
 
     if (m_state == u"connected") {
@@ -1112,6 +1137,8 @@ void App::updateTray()
     QMenu *modes = m_trayMenu->addMenu(tr("Mode"));
     const QString mode = m_storage->settings.value(u"mode"_s).toString();
     for (const auto &[key, label] : {std::pair{u"proxy"_s, tr("System proxy")}, std::pair{u"tun"_s, tr("TUN")}}) {
+        if (key == u"tun" && !tunAllowed())
+            continue;
         QAction *a = modes->addAction(label, this, [this, key] { setSetting(u"mode"_s, key); });
         a->setCheckable(true);
         a->setChecked(mode == key);

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "policy.h"
+
 #include <QObject>
 #include <QProcessEnvironment>
 #include <QStringList>
@@ -26,6 +28,9 @@ bool hotspotActive();
 bool tunPresent();
 QString physicalInterface();
 
+// Read on every use, so a changed policy applies without restarting the service.
+AdminPolicy adminPolicy(QString *error = nullptr);
+
 }
 
 namespace rl {
@@ -37,7 +42,8 @@ public:
     bool listen(QString *error);
 
 signals:
-    void clientReady(QLocalSocket *socket, const QString &peer);
+    // owner identifies who the client acts for: the Windows logon session on Windows, the uid on Linux.
+    void clientReady(QLocalSocket *socket, const QString &peer, const QString &owner);
 
 private:
 #ifdef Q_OS_WIN

@@ -162,11 +162,20 @@ ScrollView {
             Row2 {
                 Name { text: qsTr("Default mode") }
                 Combo {
-                    readonly property var keys: ["tun", "proxy"]
-                    model: [qsTr("TUN"), qsTr("System proxy")]
+                    readonly property var keys: App.tunAllowed ? ["tun", "proxy"] : ["proxy"]
+                    model: App.tunAllowed ? [qsTr("TUN"), qsTr("System proxy")] : [qsTr("System proxy")]
                     currentIndex: keys.indexOf(App.settings.mode)
                     onActivated: index => App.setSetting("mode", keys[index])
                 }
+            }
+            Label {
+                visible: !App.tunAllowed
+                Layout.fillWidth: true
+                Layout.bottomMargin: 12
+                wrapMode: Text.Wrap
+                color: Theme.muted
+                font.pixelSize: Theme.sm
+                text: qsTr("TUN is disabled by the administrator")
             }
             Divider {}
             Row2 {
@@ -259,8 +268,9 @@ ScrollView {
                     inputMethodHints: Qt.ImhUrlCharactersOnly
                 }
             }
-            Divider {}
+            Divider { visible: App.tunAllowed }
             Row2 {
+                visible: App.tunAllowed
                 Name { text: qsTr("TUN MTU (0 = default)") }
                 SpinBox {
                     from: 0

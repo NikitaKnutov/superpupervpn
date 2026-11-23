@@ -1,6 +1,7 @@
 #pragma once
 
 #include "configgen.h"
+#include "policy.h"
 #include "profile.h"
 
 #include <QHash>
@@ -28,10 +29,12 @@ private:
     struct Client {
         QByteArray buf;
         QString peer;
+        QString owner;
         bool subscribed = false;
     };
 
-    void onClient(QLocalSocket *s, const QString &peer);
+    void onClient(QLocalSocket *s, const QString &peer, const QString &owner);
+    void onClientGone(QLocalSocket *s);
     void onReadyRead(QLocalSocket *s);
     void dispatch(QLocalSocket *s, const QJsonObject &req);
     void send(QLocalSocket *s, const QJsonObject &msg);
@@ -39,11 +42,15 @@ private:
     void replyError(QLocalSocket *s, const QJsonValue &id, int code, const QString &message,
                     const QString &field = QString());
     void notify(QLocalSocket *s, const QString &method, const QJsonObject &params);
-    void broadcast(const QString &method, const QJsonObject &params);
+    void broadcast(const QString &method, const QJsonObject &params, bool ownerOnly = false);
     void log(const QString &source, const QString &level, const QString &message);
 
-    QJsonObject helloResult() const;
-    std::optional<FieldError> connectCore(const QJsonObject &params);
+    QJsonObject helloResult();
+    AdminPolicy policy();
+    bool usedByOther(const QString &owner) const;
+    QJsonObject stateFor(const QString &owner) const;
+    void broadcastState();
+    std::optional<FieldError> connectCore(const QJsonObject &params, const QString &owner);
     void disconnectCore();
     void startCore();
     void onCoreReady();
@@ -63,6 +70,10 @@ private:
     QJsonObject m_state{{QStringLiteral("state"), QStringLiteral("disconnected")}};
     QString m_coreVersion;
 
+    // Who started the core (see HelperServer::clientReady). The helper runs one core for the whole machine, so on
+    // a terminal server only that user may change or stop it while one of their clients is still connected.
+    QString m_owner;
+    QString m_policyError;
     bool m_wanted = false;
     bool m_wasConnected = false;
     Profile m_profile;

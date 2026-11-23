@@ -3,6 +3,7 @@ add_library(libcore STATIC
     linkparser.cpp linkparser.h
     subscription.cpp subscription.h
     configgen.cpp configgen.h
+    policy.cpp policy.h
     masking.cpp masking.h
     geoip.cpp geoip.h
     i18n.cpp i18n.h

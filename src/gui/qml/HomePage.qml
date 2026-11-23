@@ -196,7 +196,31 @@ ScrollView {
             }
         }
 
+        Label {
+            visible: App.usedByOther
+            Layout.fillWidth: true
+            Layout.leftMargin: 16
+            Layout.rightMargin: 16
+            horizontalAlignment: Text.AlignHCenter
+            wrapMode: Text.Wrap
+            color: Theme.muted
+            text: qsTr("SuperPuperVPN is in use by another user on this computer")
+        }
+
+        Label {
+            visible: !App.tunAllowed
+            Layout.fillWidth: true
+            Layout.leftMargin: 16
+            Layout.rightMargin: 16
+            horizontalAlignment: Text.AlignHCenter
+            wrapMode: Text.Wrap
+            color: Theme.muted
+            font.pixelSize: Theme.sm
+            text: qsTr("System proxy mode. TUN is disabled by the administrator")
+        }
+
         Segmented {
+            visible: App.tunAllowed
             Layout.fillWidth: true
             Layout.leftMargin: 16
             Layout.rightMargin: 16

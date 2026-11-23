@@ -178,6 +178,51 @@ reported as unsupported.
 | No tray icon on GNOME | Install and enable the AppIndicator extension. |
 | Proxy mode does not work in a terminal | CLI tools ignore the desktop proxy setting; use TUN mode. |
 
+## For administrators / terminal servers
+
+TUN mode routes the traffic of the **whole machine** through the tunnel, every user's session included. On a shared
+machine (Windows Server with Remote Desktop Services, a multi-user Linux box) turn it off with a machine-wide policy;
+users then get System proxy mode only.
+
+**Windows** (elevated PowerShell or a GPO registry item):
+
+```powershell
+New-Item -Path 'HKLM:\SOFTWARE\Policies\SuperPuperVPN' -Force | Out-Null
+New-ItemProperty -Path 'HKLM:\SOFTWARE\Policies\SuperPuperVPN' -Name AllowTun -PropertyType DWord -Value 0 -Force
+```
+
+**Linux**: `/etc/superpupervpn/policy.json`, owned by root:
+
+```json
+{"allowTun": false}
+```
+
+- A missing value or file means TUN is allowed. A value that is present but wrong (not a DWORD, broken JSON,
+  `"allowTun": "no"`) also forbids TUN, so a typo never lifts the restriction.
+- The service reads the policy on every connect and reconnect, so no restart is needed. A TUN connection that is
+  already up stays until it reconnects or the user disconnects; restart the service to end it at once.
+- The service enforces it: a `connect` in TUN mode is refused even from a modified app. The app hides the TUN choice,
+  shows "TUN is disabled by the administrator" and switches a saved TUN setting to System proxy.
+- The service runs one connection for the whole machine. While a user is connected, other users (other Windows
+  logon sessions, other uids on Linux) cannot connect or disconnect it and see "in use by another user"; they can
+  take over once that user's app is closed.
+- Known limits on a shared machine: the local proxy port listens on 127.0.0.1 without a password, so other local
+  users could point their apps at it; the service log is visible to every user's app (server addresses are hidden
+  by default).
+
+A build for one site without offering it to everyone: push a tag with a suffix, e.g. `git tag v0.2.9-rds1 && git push
+origin v0.2.9-rds1`. CI publishes it as a GitHub pre-release, which the app's update check ignores. The part before
+`-` must equal the version in `CMakeLists.txt`.
+
+Manual check on the server, with the policy set and two ordinary users signed in over RDP:
+
+1. User A opens the app: no TUN switch on the main screen, *Settings → Default mode* offers System proxy only, and
+   the *Service* log shows no error about the policy.
+2. User A connects. User B's browser still goes out directly (TUN is off, B's system proxy is untouched), and no
+   `superpupervpn` network adapter appears in `Get-NetAdapter`.
+3. User B presses Connect: "SuperPuperVPN is already in use by another user on this computer". User A quits the app;
+   now user B can connect.
+
 ## Build from source
 
 Requirements: CMake ≥ 3.21, a C++20 compiler, Qt ≥ 6.8 (Base, Declarative, Network, Linguist tools), OpenSSL 3,

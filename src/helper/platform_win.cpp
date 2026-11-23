@@ -274,6 +274,23 @@ QString physicalInterface()
     return best;
 }
 
+AdminPolicy adminPolicy(QString *error)
+{
+    AdminPolicy p;
+    DWORD value = 0, size = sizeof(value);
+    const LSTATUS rc = RegGetValueW(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Policies\\SuperPuperVPN", L"AllowTun",
+                                    RRF_RT_REG_DWORD, nullptr, &value, &size);
+    if (rc == ERROR_SUCCESS) {
+        p.allowTun = value != 0;
+    } else if (rc != ERROR_FILE_NOT_FOUND) {
+        // Present but not a DWORD (or unreadable): the administrator meant to set something, so stay closed.
+        p.allowTun = false;
+        if (error)
+            *error = QCoreApplication::translate("Platform", "the AllowTun policy value is not a DWORD, TUN is disabled until it is fixed");
+    }
+    return p;
+}
+
 }
 
 namespace rl {
@@ -347,14 +364,16 @@ void HelperServer::onPipeConnected()
     ResetEvent(m_event);
     HANDLE h = m_pipe;
     m_pipe = nullptr;
-    ULONG pid = 0;
+    ULONG pid = 0, session = 0;
     GetNamedPipeClientProcessId(h, &pid);
-    const QString peer = u"pid=%1"_s.arg(pid);
+    // On a terminal server every user has their own logon session; a failed lookup gets an owner nobody shares.
+    const QString owner = GetNamedPipeClientSessionId(h, &session) ? u"session:%1"_s.arg(session) : u"pid:%1"_s.arg(pid);
+    const QString peer = u"pid=%1 %2"_s.arg(pid).arg(owner);
     qInfo("connection from %s", qPrintable(peer));
     auto *s = new QLocalSocket(this);
     if (s->setSocketDescriptor(qintptr(h))) {
         connect(s, &QLocalSocket::disconnected, s, &QObject::deleteLater);
-        emit clientReady(s, peer);
+        emit clientReady(s, peer, owner);
     } else {
         CloseHandle(h);
         delete s;

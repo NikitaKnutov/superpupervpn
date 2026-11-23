@@ -3,6 +3,7 @@
 #include "i18n.h"
 #include "linkparser.h"
 #include "masking.h"
+#include "policy.h"
 #include "subscription.h"
 
 #include <QJsonArray>
@@ -292,6 +293,33 @@ private slots:
         o.remove(u"rule-providers"_s);
         o[u"host"_s] = u"a.com\nrules: []"_s;
         QVERIFY(validate(Profile::fromJson(o)));
+    }
+
+    void adminPolicy()
+    {
+        QString error;
+        QVERIFY(parsePolicyJson("{}", &error).allowTun);
+        QVERIFY(error.isEmpty());
+        QVERIFY(parsePolicyJson(R"({"allowTun": true})").allowTun);
+        QVERIFY(!parsePolicyJson(R"({"allowTun": false})").allowTun);
+        // A file the admin wrote but got wrong never lifts the restriction.
+        for (const QByteArray bad : {QByteArray("{allowTun: false"), QByteArray(R"({"allowTun": 0})"),
+                                     QByteArray(R"({"allowTun": "no"})"), QByteArray("[]"), QByteArray()}) {
+            error.clear();
+            QVERIFY2(!parsePolicyJson(bad, &error).allowTun, bad.constData());
+            QVERIFY(!error.isEmpty());
+        }
+
+        const AdminPolicy open, closed{false};
+        QVERIFY(helperCapabilities(open).contains(u"tun"_s));
+        QVERIFY(!helperCapabilities(closed).contains(u"tun"_s));
+        QVERIFY(helperCapabilities(closed).contains(u"proxy"_s));
+        QVERIFY(!checkPolicy(open, u"tun"_s));
+        QVERIFY(!checkPolicy(closed, u"proxy"_s));
+        const auto e = checkPolicy(closed, u"tun"_s);
+        QVERIFY(e);
+        QCOMPARE(e->field, u"mode"_s);
+        QVERIFY(e->text().contains(u"administrator"_s));
     }
 
     void masking()

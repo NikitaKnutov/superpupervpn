@@ -192,4 +192,12 @@ jobs:
       - name: Publish
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "$GITHUB_REF_NAME" out/* --repo "$GITHUB_REPOSITORY" --title "SuperPuperVPN $GITHUB_REF_NAME" --generate-notes
+        run: |
+          # vX.Y.Z is a normal release. A suffix (v0.2.9-rds1) publishes a pre-release: /releases/latest, which the
+          # app's update check reads, skips those, so no one is offered it. Packages always carry the CMake version.
+          base="${GITHUB_REF_NAME#v}"
+          base="${base%%-*}"
+          [ -f "out/SuperPuperVPN-$base-windows-x64.msi" ] || { echo "tag $GITHUB_REF_NAME does not match the version in CMakeLists.txt"; exit 1; }
+          pre=()
+          [[ "$GITHUB_REF_NAME" == *-* ]] && pre=(--prerelease)
+          gh release create "$GITHUB_REF_NAME" out/* --repo "$GITHUB_REPOSITORY" --title "SuperPuperVPN $GITHUB_REF_NAME" --generate-notes "${pre[@]}"

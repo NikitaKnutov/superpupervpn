@@ -242,6 +242,19 @@ QString physicalInterface()
     return best;
 }
 
+AdminPolicy adminPolicy(QString *error)
+{
+    QFile f(devOverride("SUPERPUPERVPN_POLICY", u"/etc/superpupervpn/policy.json"_s));
+    if (!f.exists())
+        return {};
+    if (!f.open(QIODevice::ReadOnly) || f.size() > 64 * 1024) {
+        if (error)
+            *error = QCoreApplication::translate("Policy", "the policy file is invalid, TUN is disabled until it is fixed");
+        return AdminPolicy{false};
+    }
+    return parsePolicyJson(f.readAll(), error);
+}
+
 }
 
 namespace rl {
@@ -290,7 +303,7 @@ void HelperServer::authorize(QLocalSocket *socket)
         if (socket->state() != QLocalSocket::ConnectedState)
             return;
         if (status == QProcess::NormalExit && code == 0) {
-            emit clientReady(socket, peer);
+            emit clientReady(socket, peer, u"uid:%1"_s.arg(cred.uid));
             return;
         }
         qWarning("polkit denied %s", qPrintable(peer));
